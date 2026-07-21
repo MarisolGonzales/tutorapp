@@ -84,7 +84,7 @@ public class PagoService {
 
         Pago pago = new Pago(sesion, sesion.getServicioTutor().getPrecio(), metodo, referencia);
 
-        // Valida el pago con las anotaciones de la entity (@NotNull, @NotBlank, @Positive...)
+        // Valida el pago con las anotaciones de la entity 
         var errores = validator.validate(pago);
         if (!errores.isEmpty()) {
             throw new IllegalArgumentException(errores.iterator().next().getMessage());

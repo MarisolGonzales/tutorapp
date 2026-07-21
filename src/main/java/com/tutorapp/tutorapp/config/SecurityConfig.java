@@ -72,8 +72,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // static: permite crear este bean sin instanciar SecurityConfig,
-    // evitando el ciclo SecurityConfig -> SuccessHandler -> TutorService -> PasswordEncoder
+    // static: permite crear este bean sin instanciar SecurityConfig
     @Bean
     public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -36,7 +36,7 @@ public class ServicioTutor {
     @Positive(message = "El precio debe ser mayor a 0")
     private Double precio;
 
-    // Todas las tutorías son virtuales; el campo se mantiene por compatibilidad con la BD
+    // Todas las tutorías son virtuales
     @Column(nullable = false, length = 20)
     @NotBlank(message = "La modalidad no puede estar vacía")
     @Pattern(

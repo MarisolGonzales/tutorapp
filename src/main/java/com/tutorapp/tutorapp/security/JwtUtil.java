@@ -16,11 +16,11 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    // 👇 VALORES POR DEFECTO DIRECTAMENTE EN EL CÓDIGO
+    // VALORES POR DEFECTO DIRECTAMENTE EN EL CÓDIGO
     private static final String DEFAULT_SECRET = "5X8nE2rT9vW4yK7mQ3pJ6sH1cF0zL9xG";
     private static final long DEFAULT_EXPIRATION = 3600000;
 
-    // 👇 Spring intentará cargar del properties, si no, usa el valor por defecto
+    // Spring intentará cargar del properties, si no, usa el valor por defecto
     @Value("${jwt.secret:" + DEFAULT_SECRET + "}")
     private String secret;
 

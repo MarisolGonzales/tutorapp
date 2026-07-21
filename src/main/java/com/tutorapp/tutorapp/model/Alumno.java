@@ -54,7 +54,7 @@ public class Alumno {
     @NotBlank(message = "Ingresa el ciclo académico en el que te encuentras")
     private String cicloAcademico;
 
-    // URL pública de la foto de perfil en Cloudinary (https://res.cloudinary.com/...)
+    // URL pública de la foto de perfil en Cloudinary
     @Column(length = 300)
     private String fotoPerfil;
 

@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Positive;
 
 /**
  * Retiro simulado de las ganancias del tutor. El dinero sale de su saldo
- * disponible (pagos liberados menos retiros anteriores) hacia su Yape
+ * disponible hacia su Yape
  * o su cuenta bancaria.
  */
 @Entity
