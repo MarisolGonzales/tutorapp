@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Registro de Alumno — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+  <nav class="navbar-publica">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="nav-logo" th:href="@{/}">Tutor<span>App</span></a>
+    </div>
+  </nav>
+
+  <div class="pagina-auth">
+    <div class="caja-auth">
+
+      <div class="auth-logo">
+        <div class="marca">Tutor<span>App</span></div>
+        <p>Crea tu cuenta como alumno</p>
+      </div>
+
+      <h2 class="auth-titulo">Registro de alumno</h2>
+
+      <!-- novalidate: desactiva la validación del navegador para que
+           los mensajes salgan de Spring Validation (@NotBlank, @Email...) -->
+      <form th:action="@{/registro-alumno}" th:object="${alumno}" method="post" novalidate>
+        <div class="campo-form">
+          <label for="nombre"><i class="fa-solid fa-user icono-label"></i>Nombre completo</label>
+          <input type="text" th:field="*{nombre}" placeholder="Ej. Juan Pérez" required>
+          <div th:if="${#fields.hasErrors('nombre')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('nombre')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="email"><i class="fa-solid fa-envelope icono-label"></i>Correo electrónico</label>
+          <input type="email" th:field="*{email}" placeholder="tucorreo@uni.edu.pe" required>
+          <div th:if="${#fields.hasErrors('email')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('email')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="universidad"><i class="fa-solid fa-building-columns icono-label"></i>Universidad</label>
+          <input type="text" th:field="*{universidad}" placeholder="Ej. UPC, PUCP, UTP..." required>
+          <div th:if="${#fields.hasErrors('universidad')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('universidad')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="carrera"><i class="fa-solid fa-graduation-cap icono-label"></i>Carrera</label>
+          <input type="text" th:field="*{carrera}" placeholder="Ej. Ingeniería de Software" required>
+          <div th:if="${#fields.hasErrors('carrera')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('carrera')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="cicloAcademico"><i class="fa-solid fa-layer-group icono-label"></i>Ciclo actual</label>
+          <select th:field="*{cicloAcademico}" required>
+            <option value="" disabled selected>Selecciona tu ciclo</option>
+            <option th:each="c : ${#numbers.sequence(1, 10)}" th:value="${c}" th:text="${c}"></option>
+          </select>
+          <div th:if="${#fields.hasErrors('cicloAcademico')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('cicloAcademico')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="contrasena"><i class="fa-solid fa-lock icono-label"></i>Contraseña</label>
+          <input type="password" th:field="*{contrasena}" placeholder="Mínimo 8 caracteres" required>
+          <div th:if="${#fields.hasErrors('contrasena')}" class="text-danger small">
+            <span th:each="err : ${#fields.errors('contrasena')}" th:text="${err}"></span>
+          </div>
+        </div>
+        <div class="campo-form">
+          <label for="confirmarContrasena"><i class="fa-solid fa-lock icono-label"></i>Confirmar contraseña</label>
+          <input type="password" id="confirmarContrasena" name="confirmarContrasena" placeholder="Repite tu contraseña" required>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span th:text="${error}"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-2">Crear cuenta</button>
+      </form>
+
+      <p class="auth-footer-texto mt-3">
+        ¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión</a>
+      </p>
+      <p class="auth-footer-texto">
+        ¿Quieres registrarte como tutor? <a th:href="@{/registro-tutor}">Aquí</a>
+      </p>
+
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

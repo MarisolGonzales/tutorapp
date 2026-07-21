@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title th:text="${tutor.nombre} + ' — TutorApp'">Perfil — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar-publica">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="nav-logo" th:href="@{/}">Tutor<span>App</span></a>
+      <div class="nav-links" id="navLinks">
+        <th:block th:if="${session.usuarioNombre != null}">
+          <span class="nombre-alumno">
+            <i class="fa-solid fa-circle-user"></i>
+            <span th:text="${session.usuarioNombre}">Usuario</span>
+          </span>
+          <a th:if="${session.usuarioTipo == 'ALUMNO'}" th:href="@{/alumno/panel}" class="btn btn-outline-light">Mi panel</a>
+        </th:block>
+        <th:block th:unless="${session.usuarioNombre != null}">
+          <a th:href="@{/tutores}" class="btn btn-outline-light">Tutores</a>
+          <a th:href="@{/login}" class="btn btn-outline-light">Iniciar sesión</a>
+          <a th:href="@{/registro-alumno}" class="btn btn-primary">Registrarse</a>
+        </th:block>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+
+    <a th:href="@{/tutores}" class="btn btn-outline-secondary btn-sm mb-4">
+      <i class="fa-solid fa-arrow-left"></i> Volver a tutores
+    </a>
+
+    <div class="row g-4 align-items-start">
+
+      <!-- Columna izquierda: info del tutor -->
+      <div class="col-md-4">
+        <div class="card text-center p-4 shadow-sm">
+          <img th:src="${tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=120'}"
+               th:data-fallback="${'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=120'}"
+               onerror="this.onerror=null;this.src=this.dataset.fallback;"
+               th:alt="${tutor.nombre}" class="foto-tutor mx-auto mb-3">
+          <h4 class="fw-bold mb-1" style="color:var(--oscuro);" th:text="${tutor.nombre}">Nombre</h4>
+          <p class="aclaracion mb-1">
+            <i class="fa-solid fa-building-columns"></i>
+            <span th:text="${tutor.universidad}">Universidad</span>
+          </p>
+          <p class="aclaracion mb-2" th:text="${tutor.carrera + ' · Ciclo ' + tutor.cicloAcademico}">Carrera</p>
+
+          <div class="estrellitas justify-content-center mb-3" th:if="${totalResenas > 0}">
+            <i class="fa-solid fa-star"></i>
+            <span th:text="${#numbers.formatDecimal(promedio, 1, 1)}">0.0</span>
+            <span th:text="'(' + ${totalResenas} + ' reseña' + (${totalResenas} != 1 ? 's' : '') + ')'"></span>
+          </div>
+          <div class="mb-3" th:unless="${totalResenas > 0}">
+            <span class="aclaracion">Sin reseñas aún</span>
+          </div>
+
+          <!-- Botón según sesión -->
+          <button th:if="${session.usuarioTipo == 'ALUMNO'}"
+                  type="button" class="btn btn-primary w-100"
+                  data-bs-toggle="modal" data-bs-target="#modalReservar">
+            <i class="fa-solid fa-calendar-plus"></i> Reservar sesión
+          </button>
+          <a th:unless="${session.usuarioTipo == 'ALUMNO'}"
+             th:href="@{/login}" class="btn btn-primary w-100">
+            <i class="fa-solid fa-right-to-bracket"></i> Inicia sesión para reservar
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna derecha: servicios -->
+      <div class="col-md-8">
+
+        <div class="card mb-4 shadow-sm"
+             th:if="${tutor.descripcion != null and !#strings.isEmpty(tutor.descripcion)}">
+          <div class="card-body">
+            <h5 class="fw-bold mb-2" style="color:var(--oscuro);">
+              <i class="fa-solid fa-user-pen text-primary"></i> Sobre mí
+            </h5>
+            <p class="aclaracion mb-0" style="white-space: pre-line;" th:text="${tutor.descripcion}">Descripción</p>
+          </div>
+        </div>
+
+        <h5 class="fw-bold mb-3" style="color:var(--oscuro);">
+          <i class="fa-solid fa-book-open text-primary"></i> Cursos disponibles
+        </h5>
+
+        <div th:if="${#lists.isEmpty(servicios)}" class="card p-4">
+          <p class="aclaracion mb-0">Este tutor aún no tiene cursos publicados.</p>
+        </div>
+
+        <div th:each="servicio : ${servicios}" class="card mb-3 shadow-sm">
+          <div class="card-body d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h6 class="fw-bold mb-1" style="color:var(--oscuro);" th:text="${servicio.curso.nombre}">Curso</h6>
+              <p class="aclaracion mb-1">
+                &nbsp;·&nbsp;
+                <strong>S/. <span th:text="${servicio.precio}">0</span></strong> por sesión
+              </p>
+              <p class="aclaracion mb-0"
+                 th:if="${servicio.descripcion != null and !#strings.isEmpty(servicio.descripcion)}"
+                 th:text="${servicio.descripcion}"></p>
+            </div>
+            <button th:if="${session.usuarioTipo == 'ALUMNO'}"
+                    type="button" class="btn btn-outline-primary btn-sm flex-shrink-0"
+                    th:data-idservicio="${servicio.id}"
+                    th:data-curso="${servicio.curso.nombre}"
+                    onclick="seleccionarServicio(this)"
+                    data-bs-toggle="modal" data-bs-target="#modalReservar">
+              <i class="fa-solid fa-calendar-plus"></i> Reservar
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal reservar (solo para alumnos) -->
+  <div th:if="${session.usuarioTipo == 'ALUMNO'}"
+       class="modal fade" id="modalReservar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal">
+            <i class="fa-solid fa-calendar-plus"></i>
+            Reservar con <span th:text="${tutor.nombre}">Tutor</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- novalidate: la validación la hace el servidor con las anotaciones
+               de la entity; los errores se muestran en rojo debajo de cada campo -->
+          <form id="formReservar" action="/alumno/agendar" method="post" class="form-modal" novalidate>
+            <input type="hidden" name="origen" th:value="@{/tutor/perfil/{id}(id=${tutor.id})}">
+
+            <div class="mb-3">
+              <label class="label-modal">Curso <span class="texto-requerido">*</span></label>
+              <select class="form-select" name="idServicioTutor" id="selectServicio" required>
+                <option value="" disabled selected>Selecciona un curso</option>
+                <option th:each="s : ${servicios}"
+                        th:value="${s.id}"
+                        th:data-precio="${s.precio}"
+                        th:text="${s.curso.nombre + ' · S/. ' + s.precio}">
+                </option>
+              </select>
+              <div th:if="${erroresReserva != null and erroresReserva['servicioTutor'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['servicioTutor']}"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Fecha <span class="texto-requerido">*</span></label>
+              <input type="date" class="form-control" name="fecha" id="reserva-fecha" required>
+              <div th:if="${erroresReserva != null and erroresReserva['fecha'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['fecha']}"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Hora <span class="texto-requerido">*</span></label>
+              <input type="time" class="form-control" name="hora" id="reserva-hora" required>
+              <div th:if="${erroresReserva != null and erroresReserva['hora'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['hora']}"></div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="label-modal"><i class="fa-solid fa-money-bill-wave"></i> Pago de la sesión</span>
+              <span class="fw-bold" style="color: var(--azul); font-size: 1.2rem;" id="reserva-total">S/. 0.00</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Método de pago <span class="texto-requerido">*</span></label>
+              <select class="form-select" name="metodoPago" id="reserva-metodo" required onchange="cambiarMetodoPago()">
+                <option value="" disabled selected>Selecciona cómo pagar</option>
+                <option value="Yape">Yape</option>
+                <option value="Tarjeta">Tarjeta de crédito / débito</option>
+              </select>
+              <div th:if="${erroresReserva != null and erroresReserva['metodoPago'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['metodoPago']}"></div>
+            </div>
+
+            <!-- Campos Yape -->
+            <div id="campos-yape" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Número de celular (Yape) <span class="texto-requerido">*</span></label>
+                <input type="tel" class="form-control" name="celularYape" id="reserva-celular-yape"
+                       inputmode="numeric" pattern="9\d{8}" maxlength="9"
+                       placeholder="Ej. 987654321">
+                <div th:if="${erroresReserva != null and erroresReserva['celularYape'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['celularYape']}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="label-modal">Código de aprobación de Yape <span class="texto-requerido">*</span></label>
+                <input type="text" class="form-control" name="codigoAprobacion" id="reserva-codigo-yape"
+                       inputmode="numeric" pattern="\d{6}" maxlength="6"
+                       placeholder="Ej. 845123">
+                <small class="aclaracion">Yapea al 999 999 999 (TutorApp) e ingresa el código de aprobación (6 dígitos) de tu operación.</small>
+                <div th:if="${erroresReserva != null and erroresReserva['codigoAprobacion'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['codigoAprobacion']}"></div>
+              </div>
+            </div>
+
+            <!-- Campos Tarjeta -->
+            <div id="campos-tarjeta" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Número de tarjeta <span class="texto-requerido">*</span></label>
+                <input type="text" class="form-control" name="numeroTarjeta" id="reserva-num-tarjeta"
+                       inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456">
+                <div th:if="${erroresReserva != null and erroresReserva['numeroTarjeta'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['numeroTarjeta']}"></div>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="label-modal">Vencimiento <span class="texto-requerido">*</span></label>
+                  <input type="text" class="form-control" id="reserva-venc-tarjeta" maxlength="5" placeholder="MM/AA">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="label-modal">CVV <span class="texto-requerido">*</span></label>
+                  <input type="password" class="form-control" id="reserva-cvv-tarjeta"
+                         inputmode="numeric" maxlength="4" placeholder="123">
+                </div>
+              </div>
+            </div>
+
+            <div class="p-2 rounded aviso-info">
+              <i class="fa-solid fa-shield-halved"></i>
+              TutorApp <strong>retiene tu pago</strong> y se lo transfiere al tutor recién cuando la sesión
+              se completa. Si la sesión se cancela, <strong>se te reembolsa</strong> el monto completo.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer footer-tutor">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" form="formReservar" class="btn btn-primary">
+            <i class="fa-solid fa-lock"></i> Pagar y reservar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp &nbsp;·&nbsp; Hecho para universitarios peruanos 🇵🇪</footer>
+
+  <!-- Si la reserva tuvo errores, perfil-tutor.js reabre el modal con lo llenado -->
+  <span id="datos-reserva" hidden th:if="${erroresReserva != null}"
+        th:data-idservicio="${reservaValores['idServicioTutor']}"
+        th:data-fecha="${reservaValores['fecha']}"
+        th:data-hora="${reservaValores['hora']}"
+        th:data-metodo="${reservaValores['metodoPago']}"
+        th:data-celular="${reservaValores['celularYape']}"
+        th:data-codigo="${reservaValores['codigoAprobacion']}"></span>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script src="/js/perfil-tutor.js"></script>
+</body>
+</html>

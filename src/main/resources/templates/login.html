@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Iniciar sesión — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+  <nav class="navbar-publica">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="nav-logo" th:href="@{/}">Tutor<span>App</span></a>
+    </div>
+  </nav>
+
+  <div class="pagina-auth">
+    <div class="caja-auth">
+
+      <div class="auth-logo">
+        <div class="marca">Tutor<span>App</span></div>
+        <p>Bienvenido de vuelta 👋</p>
+      </div>
+
+      <h2 class="auth-titulo">Iniciar sesión</h2>
+
+      <!-- novalidate: la validación la hace el servidor (Spring Security);
+           cualquier credencial vacía o inválida termina en /login?error -->
+      <form th:action="@{/login}" method="post" novalidate>
+        <div class="campo-form">
+          <label for="email"><i class="fa-solid fa-envelope icono-label"></i>Correo electrónico</label>
+          <input type="email" id="email" name="email" placeholder="tucorreo@uni.edu.pe" required>
+        </div>
+        <div class="campo-form">
+          <label for="pass"><i class="fa-solid fa-lock icono-label"></i>Contraseña</label>
+          <input type="password" id="pass" name="contrasena" placeholder="••••••••" required>
+        </div>
+        <div th:if="${mensaje}" class="alert alert-success d-flex align-items-center gap-2" role="alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span th:text="${mensaje}"></span>
+        </div>
+
+        <div th:if="${param.error != null or error != null}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span th:text="${error != null ? error : 'Correo o contraseña incorrectos.'}"></span>
+        </div>
+
+        <div th:if="${param.logout}" class="alert alert-success d-flex align-items-center gap-2" role="alert">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Sesión cerrada correctamente.</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Ingresar</button>
+      </form>
+
+      <div class="divider-texto">o</div>
+      <p class="auth-footer-texto">¿No tienes cuenta? <a th:href="@{/registro-alumno}">Regístrate gratis</a></p>
+      <p class="auth-footer-texto">¿Quieres enseñar? <a th:href="@{/registro-tutor}">Regístrate como tutor</a></p>
+
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

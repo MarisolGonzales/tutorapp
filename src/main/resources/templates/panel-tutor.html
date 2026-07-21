@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Panel del Tutor — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar-panel">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="logo-panel" th:href="@{/tutor/panel}">TutorApp</a>
+      <div class="d-flex align-items-center gap-3">
+        <span class="nombre-alumno d-flex align-items-center">
+          <img th:src="${tutor != null and tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(session.usuarioNombre,' ','+') + '&background=2563EB&color=fff&size=60'}"
+               th:data-fallback="${'https://ui-avatars.com/api/?name=' + #strings.replace(session.usuarioNombre,' ','+') + '&background=2563EB&color=fff&size=60'}"
+               onerror="this.onerror=null;this.src=this.dataset.fallback;"
+               th:alt="${session.usuarioNombre}" class="foto-navbar">
+          <span th:text="${session.usuarioNombre}">Tutor</span>
+        </span>
+        <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+
+    <div th:if="${mensaje}" class="alert alert-success d-flex align-items-center gap-2" role="alert">
+      <i class="fa-solid fa-circle-check"></i>
+      <span th:text="${mensaje}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span th:text="${error}"></span>
+    </div>
+
+    <div class="cabecera-panel">
+      <h2>Mi Panel de Tutor</h2>
+      <p>Gestiona tus sesiones, revisa solicitudes y mantén tu perfil al día.</p>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- Menú lateral (pestañas) -->
+      <div class="col-md-3 col-lg-2">
+        <nav class="nav nav-pills menu-panel flex-md-column flex-row flex-nowrap overflow-auto" role="tablist">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-inicio" type="button" role="tab">
+            <i class="fa-solid fa-house"></i> Inicio
+            <span class="badge bg-danger ms-1" th:if="${not #lists.isEmpty(sesionesPendientes)}"
+                  th:text="${#lists.size(sesionesPendientes)}">0</span>
+          </button>
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sesiones" type="button" role="tab">
+            <i class="fa-solid fa-calendar-days"></i> Sesiones
+          </button>
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-cursos" type="button" role="tab">
+            <i class="fa-solid fa-book-open"></i> Mis cursos
+          </button>
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-historial" type="button" role="tab">
+            <i class="fa-solid fa-clock-rotate-left"></i> Historial
+          </button>
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-pagos" type="button" role="tab">
+            <i class="fa-solid fa-wallet"></i> Mis pagos
+          </button>
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-perfil" type="button" role="tab">
+            <i class="fa-solid fa-id-card"></i> Mi perfil
+          </button>
+        </nav>
+      </div>
+
+      <!-- Contenido de las pestañas -->
+      <div class="col-md-9 col-lg-10">
+        <div class="tab-content">
+
+          <!-- ===== TAB: INICIO ===== -->
+          <div class="tab-pane fade show active" id="tab-inicio" role="tabpanel">
+            <div class="row g-4">
+
+              <div class="col-md-8 d-flex">
+                <div class="card h-100 w-100">
+                  <div class="card-body p-4">
+                    <h5 class="titulo-azul"><i class="fa-solid fa-clock"></i> Próxima Sesión</h5>
+
+                    <div th:if="${not #lists.isEmpty(sesionesConfirmadas)}">
+                      <div class="caja-sesion" th:with="proxima=${sesionesConfirmadas[0]}">
+                        <div class="info-sesion">
+                          <h6 th:text="${proxima.servicioTutor.curso.nombre}">Curso</h6>
+                          <p>
+                            <i class="fa-solid fa-circle-user"></i>
+                            <span th:text="${proxima.alumno.nombre}">Alumno</span>
+                            &nbsp;·&nbsp;
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <span th:text="${proxima.fecha + ' · ' + proxima.hora}">Fecha</span>
+                          </p>
+                        </div>
+                        <a th:if="${proxima.salaVideo != null}"
+                           th:href="@{/sesion/{id}/llamada(id=${proxima.id})}" class="btn btn-primary btn-sm">
+                          <i class="fa-solid fa-video"></i> Videollamada
+                        </a>
+                      </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(sesionesConfirmadas)}">
+                      <p class="aclaracion">No tienes sesiones confirmadas aún.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 d-flex">
+                <div class="card h-100 w-100">
+                  <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                      <h5 class="fw-bold" style="color: var(--oscuro);">Solicitudes pendientes</h5>
+                      <p class="aclaracion">
+                        Tienes
+                        <strong th:text="${#lists.size(sesionesPendientes)}">0</strong>
+                        alumno(s) esperando confirmación.
+                      </p>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalSolicitudes">
+                      <i class="fa-solid fa-bell"></i> Ver solicitudes
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ===== TAB: SESIONES AGENDADAS ===== -->
+          <div class="tab-pane fade" id="tab-sesiones" role="tabpanel">
+            <div class="card">
+              <div class="card-body p-4">
+                <h5 class="titulo-azul"><i class="fa-solid fa-calendar-days"></i> Sesiones Agendadas</h5>
+
+                <div th:if="${#lists.isEmpty(sesionesConfirmadas)}">
+                  <p class="aclaracion">No tienes sesiones agendadas.</p>
+                </div>
+
+                <div th:if="${not #lists.isEmpty(sesionesConfirmadas)}" class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Alumno</th>
+                        <th>Curso</th>
+                        <th>Fecha &amp; Hora</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="sesion : ${sesionesConfirmadas}">
+                        <td th:text="${sesion.alumno.nombre}">Alumno</td>
+                        <td th:text="${sesion.servicioTutor.curso.nombre}">Curso</td>
+                        <td th:text="${sesion.fecha + ' · ' + sesion.hora}">Fecha</td>
+                        <td class="d-flex gap-2"
+                            th:with="esFutura=${sesion.fecha.isAfter(#temporals.createToday())}">
+                          <a th:if="${sesion.salaVideo != null}"
+                             th:href="@{/sesion/{id}/llamada(id=${sesion.id})}"
+                             class="btn btn-primary btn-sm" title="Entrar a la videollamada">
+                            <i class="fa-solid fa-video"></i>
+                          </a>
+                          <form th:unless="${esFutura}" th:action="@{/tutor/completar/{id}(id=${sesion.id})}" method="post">
+                            <button type="submit" class="btn btn-success btn-sm">Completar</button>
+                          </form>
+                          <button th:if="${esFutura}" type="button" class="btn btn-success btn-sm" disabled
+                                  style="opacity:.5; cursor:not-allowed;"
+                                  th:title="'Disponible desde el ' + ${sesion.fecha} + ' a las ' + ${sesion.hora}">
+                            Completar
+                          </button>
+                          <button type="button" class="btn-rechazar btn-sm"
+                                  th:data-id="${sesion.id}"
+                                  th:data-fecha="${sesion.fecha + ' · ' + sesion.hora}"
+                                  onclick="abrirModalCancelar(this)"
+                                  data-bs-toggle="modal" data-bs-target="#modalCancelarClase">
+                            Cancelar
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: MIS CURSOS ===== -->
+          <div class="tab-pane fade" id="tab-cursos" role="tabpanel">
+            <div class="card">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="titulo-azul mb-0"><i class="fa-solid fa-book-open"></i> Mis Cursos</h5>
+                  <button type="button" class="btn btn-primary btn-sm"
+                          data-bs-toggle="modal" data-bs-target="#modalAgregarServicio">
+                    <i class="fa-solid fa-plus"></i> Agregar curso
+                  </button>
+                </div>
+
+                <div th:if="${#lists.isEmpty(servicios)}">
+                  <p class="aclaracion">No tienes cursos disponibles aún. Agrega uno para que los alumnos puedan reservar sesiones contigo.</p>
+                </div>
+
+                <div class="accordion accordion-flush" id="acordeonServicios" th:if="${not #lists.isEmpty(servicios)}">
+                  <div class="accordion-item" th:each="servicio, i : ${servicios}">
+                    <h2 class="accordion-header">
+                      <button type="button" data-bs-toggle="collapse"
+                              th:class="${i.first} ? 'accordion-button' : 'accordion-button collapsed'"
+                              th:data-bs-target="'#svc' + ${servicio.id}"
+                              th:aria-expanded="${i.first} ? 'true' : 'false'">
+                        <i class="fa-solid fa-book me-2 text-primary"></i>
+                        <span th:text="${servicio.curso.nombre}" class="fw-semibold me-2">Curso</span>
+                        <span class="badge bg-primary me-1" th:text="'S/. ' + ${servicio.precio}">S/. 0</span>
+                      </button>
+                    </h2>
+                    <div th:id="'svc' + ${servicio.id}"
+                         th:class="${i.first} ? 'accordion-collapse collapse show' : 'accordion-collapse collapse'"
+                         data-bs-parent="#acordeonServicios">
+                      <div class="accordion-body">
+                        <p th:if="${servicio.descripcion != null and !#strings.isEmpty(servicio.descripcion)}"
+                           th:text="${servicio.descripcion}" class="mb-3 aclaracion"></p>
+                        <p th:unless="${servicio.descripcion != null and !#strings.isEmpty(servicio.descripcion)}"
+                           class="aclaracion mb-3">Sin descripción.</p>
+                        <form th:action="@{/tutor/servicios/eliminar/{id}(id=${servicio.id})}" method="post">
+                          <button type="submit" class="btn-rechazar btn-sm">
+                            <i class="fa-solid fa-trash"></i> Eliminar servicio
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: HISTORIAL ===== -->
+          <div class="tab-pane fade" id="tab-historial" role="tabpanel">
+            <div class="card">
+              <div class="card-body p-4">
+                <h5 class="titulo-azul mb-3"><i class="fa-solid fa-clock-rotate-left"></i> Historial de sesiones</h5>
+
+                <div th:if="${#lists.isEmpty(historial)}">
+                  <p class="aclaracion">No hay sesiones completadas ni canceladas aún.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(historial)}" class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Alumno</th>
+                        <th>Curso</th>
+                        <th>Fecha &amp; Hora</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="sesion : ${historial}">
+                        <td th:text="${sesion.alumno.nombre}">Alumno</td>
+                        <td th:text="${sesion.servicioTutor.curso.nombre}">Curso</td>
+                        <td th:text="${sesion.fecha + ' · ' + sesion.hora}">Fecha</td>
+                        <td>
+                          <span th:text="${sesion.estado}"
+                                th:classappend="${sesion.estado.name() == 'Completada'} ? 'badge-estado estado-confirmado' : 'badge-estado estado-cancelado'">
+                            Estado
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: MIS PAGOS ===== -->
+          <div class="tab-pane fade" id="tab-pagos" role="tabpanel">
+            <div class="row g-4 mb-4">
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body p-4">
+                    <p class="aclaracion mb-1"><i class="fa-solid fa-circle-check text-success"></i> Ganancias recibidas</p>
+                    <h3 class="fw-bold mb-0" style="color: var(--oscuro);"
+                        th:text="'S/. ' + ${#numbers.formatDecimal(totalLiberado, 1, 2)}">S/. 0.00</h3>
+                    <small class="aclaracion">Sesiones completadas, ya transferido por TutorApp</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body p-4">
+                    <p class="aclaracion mb-1"><i class="fa-solid fa-hourglass-half text-warning"></i> Retenido por TutorApp</p>
+                    <h3 class="fw-bold mb-0" style="color: var(--oscuro);"
+                        th:text="'S/. ' + ${#numbers.formatDecimal(totalRetenido, 1, 2)}">S/. 0.00</h3>
+                    <small class="aclaracion">Se te transferirá al completar cada sesión</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                      <p class="aclaracion mb-1"><i class="fa-solid fa-wallet text-primary"></i> Saldo disponible</p>
+                      <h3 class="fw-bold mb-0" style="color: var(--azul);"
+                          th:text="'S/. ' + ${#numbers.formatDecimal(saldoDisponible, 1, 2)}">S/. 0.00</h3>
+                      <small class="aclaracion">Listo para retirar a tu Yape o cuenta bancaria</small>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm mt-3"
+                            data-bs-toggle="modal" data-bs-target="#modalRetirar"
+                            th:disabled="${saldoDisponible <= 0}">
+                      <i class="fa-solid fa-money-bill-transfer"></i> Retirar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body p-4">
+                <h5 class="titulo-azul mb-3"><i class="fa-solid fa-wallet"></i> Detalle de pagos</h5>
+
+                <div th:if="${#lists.isEmpty(pagos)}">
+                  <p class="aclaracion">Aún no tienes pagos registrados. Cuando un alumno reserve una sesión contigo, aparecerá aquí.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(pagos)}" class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Alumno</th>
+                        <th>Curso</th>
+                        <th>Sesión</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="pago : ${pagos}">
+                        <td th:text="${pago.sesion.alumno.nombre}">Alumno</td>
+                        <td th:text="${pago.sesion.servicioTutor.curso.nombre}">Curso</td>
+                        <td th:text="${pago.sesion.fecha + ' · ' + pago.sesion.hora}">Fecha</td>
+                        <td>
+                          <i th:class="${pago.metodo.name() == 'Yape'} ? 'fa-solid fa-mobile-screen' : 'fa-solid fa-credit-card'"></i>
+                          <span th:text="${pago.metodo}">Método</span>
+                        </td>
+                        <td th:text="'S/. ' + ${#numbers.formatDecimal(pago.monto, 1, 2)}">S/. 0.00</td>
+                        <td>
+                          <span th:if="${pago.estado.name() == 'Liberado'}" class="badge-estado estado-confirmado">Recibido</span>
+                          <span th:if="${pago.estado.name() == 'Retenido'}" class="badge-estado estado-pendiente">Retenido</span>
+                          <span th:if="${pago.estado.name() == 'Reembolsado'}" class="badge-estado estado-cancelado">Reembolsado</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-4">
+              <div class="card-body p-4">
+                <h5 class="titulo-azul mb-3"><i class="fa-solid fa-money-bill-transfer"></i> Historial de retiros</h5>
+
+                <div th:if="${#lists.isEmpty(retiros)}">
+                  <p class="aclaracion">Aún no has hecho ningún retiro.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(retiros)}" class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Método</th>
+                        <th>Destino</th>
+                        <th>Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="retiro : ${retiros}">
+                        <td th:text="${#temporals.format(retiro.fechaRetiro, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                        <td>
+                          <i th:class="${retiro.metodo.name() == 'Yape'} ? 'fa-solid fa-mobile-screen' : 'fa-solid fa-building-columns'"></i>
+                          <span th:text="${retiro.metodo.name() == 'Yape'} ? 'Yape' : 'Cuenta bancaria'">Método</span>
+                        </td>
+                        <td th:text="${retiro.destino}">Destino</td>
+                        <td th:text="'S/. ' + ${#numbers.formatDecimal(retiro.monto, 1, 2)}">S/. 0.00</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== TAB: MI PERFIL ===== -->
+          <div class="tab-pane fade" id="tab-perfil" role="tabpanel">
+            <div class="card">
+              <div class="card-body p-4">
+                <h5 class="titulo-azul"><i class="fa-solid fa-id-card"></i> Mi Perfil de Tutor</h5>
+
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <img th:src="${tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=80'}"
+                       th:data-fallback="${'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=80'}"
+                       onerror="this.onerror=null;this.src=this.dataset.fallback;"
+                       th:alt="${tutor.nombre}" class="foto-perfil-mini">
+                  <div>
+                    <p class="fw-bold mb-1" style="color: var(--oscuro);" th:text="${tutor.nombre}">Nombre</p>
+                    <p class="aclaracion mb-1" th:text="${tutor.universidad + ' · Ciclo ' + tutor.cicloAcademico}">Universidad</p>
+                    <div class="estrellitas" th:if="${totalResenas > 0}">
+                      <i class="fa-solid fa-star"></i>
+                      <span th:text="${#numbers.formatDecimal(promedio, 1, 1)}">0.0</span>
+                      <span th:text="'(' + ${totalResenas} + ' reseña' + (${totalResenas} != 1 ? 's' : '') + ')'"></span>
+                    </div>
+                    <div class="estrellitas" th:unless="${totalResenas > 0}">
+                      <span class="aclaracion">Sin reseñas aún</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="aclaracion mb-1"><strong>Carrera:</strong> <span th:text="${tutor.carrera}">Carrera</span></p>
+
+                <div class="mt-3" th:if="${tutor.descripcion != null and !#strings.isEmpty(tutor.descripcion)}">
+                  <p class="fw-bold mb-1" style="color: var(--oscuro);"><i class="fa-solid fa-user-pen text-primary"></i> Sobre mí</p>
+                  <p class="aclaracion mb-0" style="white-space: pre-line;" th:text="${tutor.descripcion}">Descripción</p>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil">
+                  <i class="fa-solid fa-pen"></i> Editar perfil
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal agregar servicio -->
+  <div class="modal fade" id="modalAgregarServicio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal"><i class="fa-solid fa-plus"></i> Agregar curso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form th:action="@{/tutor/servicios/agregar}" method="post" class="form-modal">
+            <div class="mb-3">
+              <label class="label-modal">Nombre del curso <span class="texto-requerido">*</span></label>
+              <input type="text" class="form-control" name="nombreCurso"
+                     placeholder="Ej. Cálculo I, Álgebra Lineal..." required>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Precio por sesión (S/.) <span class="texto-requerido">*</span></label>
+              <input type="number" class="form-control" name="precio"
+                     min="1" step="0.50" placeholder="Ej. 40" required>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Descripción (opcional)</label>
+              <textarea class="form-control" name="descripcion" rows="2"
+                        placeholder="Ej. Clases enfocadas en ejercicios de parcial..."></textarea>
+            </div>
+            <div class="modal-footer footer-tutor modal-footer-form">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal solicitudes -->
+  <div class="modal fade" id="modalSolicitudes" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal"><i class="fa-solid fa-bell"></i> Solicitudes pendientes</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div th:if="${#lists.isEmpty(sesionesPendientes)}">
+            <p class="aclaracion">No hay solicitudes pendientes.</p>
+          </div>
+
+          <div th:each="sesion : ${sesionesPendientes}"
+               class="d-flex justify-content-between align-items-center gap-3 p-3 border rounded mb-2">
+            <div class="info-sesion">
+              <h6 th:text="${sesion.alumno.nombre}">Alumno</h6>
+              <p>
+                <span th:text="${sesion.servicioTutor.curso.nombre}">Curso</span>
+                &nbsp;·&nbsp;
+                <i class="fa-solid fa-calendar-days"></i>
+                <span th:text="${sesion.fecha + ' · ' + sesion.hora}">Fecha</span>
+              </p>
+            </div>
+            <div class="d-flex gap-2 flex-shrink-0">
+              <form th:action="@{/tutor/aceptar/{id}(id=${sesion.id})}" method="post">
+                <button type="submit" class="btn btn-primary btn-sm">Aceptar</button>
+              </form>
+              <form th:action="@{/tutor/eliminar/{id}(id=${sesion.id})}" method="post">
+                <button type="submit" class="btn-rechazar btn-sm">Rechazar</button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer footer-tutor">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar perfil -->
+  <div class="modal fade" id="modalEditarPerfil" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal"><i class="fa-solid fa-pen"></i> Editar perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- novalidate: la validación la hace el servidor con las anotaciones
+               de la entity; los errores se muestran en rojo debajo de cada campo -->
+          <form th:action="@{/tutor/editar-perfil}" method="post" enctype="multipart/form-data"
+                class="form-modal" novalidate>
+            <div class="mb-3">
+              <label class="label-modal">Foto de perfil</label>
+              <input type="file" class="form-control" name="foto" accept="image/jpeg,image/png,image/webp">
+              <small class="aclaracion">JPG, PNG o WEBP · máx. 2 MB</small>
+              <div th:if="${erroresPerfil != null and erroresPerfil['foto'] != null}"
+                   class="text-danger small" th:text="${erroresPerfil['foto']}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Nombre completo</label>
+              <input type="text" class="form-control" name="nombre" th:value="${tutor?.nombre}">
+              <div th:if="${erroresPerfil != null and erroresPerfil['nombre'] != null}"
+                   class="text-danger small" th:text="${erroresPerfil['nombre']}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Universidad</label>
+              <input type="text" class="form-control" name="universidad" th:value="${tutor?.universidad}">
+              <div th:if="${erroresPerfil != null and erroresPerfil['universidad'] != null}"
+                   class="text-danger small" th:text="${erroresPerfil['universidad']}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Carrera</label>
+              <input type="text" class="form-control" name="carrera" th:value="${tutor?.carrera}">
+              <div th:if="${erroresPerfil != null and erroresPerfil['carrera'] != null}"
+                   class="text-danger small" th:text="${erroresPerfil['carrera']}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Ciclo académico</label>
+              <select class="form-select" name="cicloAcademico">
+                <option th:each="c : ${#numbers.sequence(5, 10)}"
+                        th:value="${c}"
+                        th:text="${c}"
+                        th:selected="${tutor?.cicloAcademico == c.toString()}"></option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="label-modal">Sobre mí</label>
+              <textarea class="form-control" name="descripcion" rows="3" maxlength="1000"
+                        placeholder="Cuéntales a los alumnos sobre ti, tu experiencia y tu forma de enseñar..."
+                        th:text="${tutor?.descripcion}"></textarea>
+            </div>
+            <div class="modal-footer footer-tutor modal-footer-form">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal retirar ganancias -->
+  <div class="modal fade" id="modalRetirar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal"><i class="fa-solid fa-money-bill-transfer"></i> Retirar ganancias</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="label-modal">Saldo disponible</span>
+            <span class="fw-bold" style="color: var(--azul); font-size: 1.2rem;"
+                  th:text="'S/. ' + ${#numbers.formatDecimal(saldoDisponible, 1, 2)}">S/. 0.00</span>
+          </div>
+
+          <!-- novalidate: la validación la hace el servidor; los errores se
+               muestran en rojo debajo de cada campo -->
+          <form th:action="@{/tutor/retirar}" method="post" class="form-modal" novalidate>
+
+            <div class="mb-3">
+              <label class="label-modal">Monto a retirar (S/.) <span class="texto-requerido">*</span></label>
+              <input type="number" class="form-control" name="monto" id="retiro-monto"
+                     min="1" step="0.50" th:max="${saldoDisponible}"
+                     th:placeholder="'Máx. ' + ${#numbers.formatDecimal(saldoDisponible, 1, 2)}" required>
+              <div th:if="${erroresRetiro != null and erroresRetiro['monto'] != null}"
+                   class="text-danger small" th:text="${erroresRetiro['monto']}"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Método de retiro <span class="texto-requerido">*</span></label>
+              <select class="form-select" name="metodoRetiro" id="retiro-metodo" required onchange="cambiarMetodoRetiro()">
+                <option value="" disabled selected>Selecciona a dónde enviar tu dinero</option>
+                <option value="Yape">Yape</option>
+                <option value="CuentaBancaria">Cuenta bancaria</option>
+              </select>
+              <div th:if="${erroresRetiro != null and erroresRetiro['metodoRetiro'] != null}"
+                   class="text-danger small" th:text="${erroresRetiro['metodoRetiro']}"></div>
+            </div>
+
+            <!-- Campos Yape -->
+            <div id="retiro-campos-yape" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Número de celular (Yape) <span class="texto-requerido">*</span></label>
+                <input type="tel" class="form-control" name="celularYape" id="retiro-celular-yape"
+                       inputmode="numeric" pattern="9\d{8}" maxlength="9"
+                       placeholder="Ej. 987654321">
+                <div th:if="${erroresRetiro != null and erroresRetiro['celularYape'] != null}"
+                     class="text-danger small" th:text="${erroresRetiro['celularYape']}"></div>
+              </div>
+            </div>
+
+            <!-- Campos Cuenta bancaria -->
+            <div id="retiro-campos-cuenta" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Banco <span class="texto-requerido">*</span></label>
+                <select class="form-select" name="banco" id="retiro-banco">
+                  <option value="" disabled selected>Selecciona tu banco</option>
+                  <option value="BCP">BCP</option>
+                  <option value="Interbank">Interbank</option>
+                  <option value="BBVA">BBVA</option>
+                  <option value="Scotiabank">Scotiabank</option>
+                  <option value="Banco de la Nación">Banco de la Nación</option>
+                  <option value="Otro">Otro</option>
+                </select>
+                <div th:if="${erroresRetiro != null and erroresRetiro['banco'] != null}"
+                     class="text-danger small" th:text="${erroresRetiro['banco']}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="label-modal">Número de cuenta <span class="texto-requerido">*</span></label>
+                <input type="text" class="form-control" name="cuentaBancaria" id="retiro-cuenta"
+                       inputmode="numeric" maxlength="20" placeholder="Ej. 19112345678901">
+                <div th:if="${erroresRetiro != null and erroresRetiro['cuentaBancaria'] != null}"
+                     class="text-danger small" th:text="${erroresRetiro['cuentaBancaria']}"></div>
+              </div>
+            </div>
+
+            <div class="mt-2 p-2 rounded aviso-info">
+              <i class="fa-solid fa-circle-info"></i>
+              El retiro es <strong>inmediato</strong> y sin comisión. El monto se descuenta de tu saldo disponible.
+            </div>
+
+            <div class="modal-footer footer-tutor modal-footer-form">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-money-bill-transfer"></i> Retirar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal cancelar clase -->
+  <div class="modal fade" id="modalCancelarClase" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+
+        <div class="modal-header modal-header-peligro">
+          <h5 class="modal-title modal-titulo-peligro">
+            <i class="fa-solid fa-triangle-exclamation"></i> Cancelar clase
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3 p-2 rounded modal-info-sesion">
+            <span><i class="fa-solid fa-calendar-days"></i> <span id="modal-fecha">—</span></span>
+          </div>
+
+          <form id="formCancelar" method="post">
+            <div class="mb-3">
+              <label class="label-modal" for="motivoSelect">Motivo de cancelación <span class="texto-requerido">*</span></label>
+              <select class="form-select" id="motivoSelect" name="motivoSelect" required onchange="toggleOtroMotivo()">
+                <option value="" disabled selected>Selecciona un motivo</option>
+                <option value="Emergencia personal">Emergencia personal</option>
+                <option value="Enfermedad">Enfermedad</option>
+                <option value="Conflicto de horario">Conflicto de horario</option>
+                <option value="Problemas técnicos">Problemas técnicos (internet, equipo)</option>
+                <option value="El alumno solicitó cancelar">El alumno solicitó cancelar</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal" for="motivoDetalle">Detalles adicionales</label>
+              <textarea class="form-control" id="motivoDetalle" name="motivoDetalle" rows="3"
+                        placeholder="Puedes agregar más información aquí..."></textarea>
+            </div>
+
+            <div class="mt-2 mb-3 p-2 rounded aviso-politica">
+              <i class="fa-solid fa-circle-info"></i>
+              <strong>Política de cancelación:</strong> Cancelar con menos de 24 horas de anticipación
+              puede afectar negativamente tu calificación como tutor.
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="checkConfirmar" onchange="toggleBtnConfirmar()">
+              <label class="form-check-label label-modal modal-titulo-peligro" for="checkConfirmar">
+                Entiendo que esta acción no se puede deshacer y la clase quedará cancelada.
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer footer-tutor">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Volver</button>
+          <button type="button" id="btnConfirmarCancelacion" class="btn-rechazar" disabled
+                  onclick="confirmarCancelacion()" style="opacity:.5; cursor:not-allowed;">
+            <i class="fa-solid fa-ban"></i> Confirmar cancelación
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp</footer>
+
+  <!-- Si el guardado del perfil tuvo errores, panel-tutor.js reabre el modal -->
+  <span id="flag-errores-perfil" hidden th:if="${erroresPerfil != null}"></span>
+
+  <!-- Si el retiro tuvo errores, panel-tutor.js reabre el modal con lo llenado -->
+  <span id="datos-retiro" hidden th:if="${erroresRetiro != null}"
+        th:data-monto="${retiroValores['monto']}"
+        th:data-metodo="${retiroValores['metodoRetiro']}"
+        th:data-celular="${retiroValores['celularYape']}"
+        th:data-banco="${retiroValores['banco']}"
+        th:data-cuenta="${retiroValores['cuentaBancaria']}"></span>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/panel-tutor.js"></script>
+</body>
+</html>

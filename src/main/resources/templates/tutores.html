@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Tutores — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+  <nav class="navbar-publica">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="nav-logo" th:href="@{/}">Tutor<span>App</span></a>
+      <div class="nav-links" id="navLinks">
+        <a th:href="@{/tutores}" class="btn btn-outline-light">Tutores</a>
+        <a th:href="@{/login}" class="btn btn-outline-light">Iniciar sesión</a>
+        <a th:href="@{/registro-alumno}" class="btn btn-primary">Registrarse</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+
+    <div class="mb-4">
+      <h2 class="fw-bold" style="color: var(--oscuro);">Tutores disponibles</h2>
+      <p class="aclaracion">Estudiantes de ciclos superiores listos para ayudarte</p>
+    </div>
+
+    <div class="grid-tutores-publico">
+
+      <!-- Estado vacío: aún no hay tutores registrados -->
+      <div th:if="${#lists.isEmpty(tutores)}" class="estado-vacio">
+        <span class="emoji">🎓</span>
+        <h5>Aún no hay tutores registrados</h5>
+        <p class="aclaracion">¡Sé el primero en enseñar y ganar con TutorApp!</p>
+        <a th:href="@{/registro-tutor}" class="btn btn-primary btn-sm">Quiero ser tutor</a>
+      </div>
+
+      <div th:each="tutor : ${tutores}" class="tarjeta-perfil-tutor">
+        <img th:src="${tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=100'}"
+             th:data-fallback="${'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=100'}"
+             onerror="this.onerror=null;this.src=this.dataset.fallback;"
+             th:alt="${tutor.nombre}" class="foto-tutor">
+        <h5 class="fw-bold" style="color: var(--oscuro);" th:text="${tutor.nombre}">Nombre</h5>
+        <p class="univ-tutor"><i class="fa-solid fa-building-columns"></i> <span th:text="${tutor.universidad}">Universidad</span></p>
+        <div class="estrellitas" th:if="${cantResenPorTutor[tutor.id] > 0}">
+          <i class="fa-solid fa-star"></i>
+          <span th:text="${#numbers.formatDecimal(promediosPorTutor[tutor.id], 1, 1)}">4.5</span>
+          <span th:text="'(' + ${cantResenPorTutor[tutor.id]} + ')'"></span>
+        </div>
+        <div class="estrellitas" th:unless="${cantResenPorTutor[tutor.id] > 0}">
+          <span class="aclaracion">Sin reseñas aún</span>
+        </div>
+        <p class="aclaracion mb-2" th:text="${tutor.carrera + ' · Ciclo ' + tutor.cicloAcademico}">Carrera</p>
+        <div class="precio-reserva">
+          <a th:href="@{/tutor/perfil/{id}(id=${tutor.id})}" class="btn btn-outline-primary btn-sm">Ver perfil</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp &nbsp;·&nbsp; Hecho para universitarios peruanos 🇵🇪</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/navbar.js"></script>
+</body>
+</html>

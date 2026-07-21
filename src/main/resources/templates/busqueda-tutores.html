@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Buscar Tutores — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar-panel">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="logo-panel" th:href="@{/alumno/panel}">TutorApp</a>
+      <div class="d-flex align-items-center gap-3">
+        <span class="nombre-alumno"><i class="fa-solid fa-circle-user"></i> <span th:text="${session.usuarioNombre}">Alumno</span></span>
+        <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+
+    <div class="cabecera-resultados">
+      <h2>Resultados de búsqueda</h2>
+      <p class="aclaracion" th:if="${cursoBusqueda != null and cursoBusqueda != ''}">
+        Mostrando tutores para <strong th:text="'&quot;' + ${cursoBusqueda} + '&quot;'"></strong>
+        — <span th:text="${#lists.size(tutores)}">0</span> encontrado(s)
+      </p>
+      <p class="aclaracion" th:if="${cursoBusqueda == null or cursoBusqueda == ''}">
+        <span th:text="${#lists.size(tutores)}">0</span> tutor(es) disponibles
+      </p>
+    </div>
+
+    <div class="row g-4 align-items-start">
+
+      <!-- Filtros -->
+      <div class="col-md-3">
+        <aside class="caja-filtros">
+          <h5><i class="fa-solid fa-filter"></i> Filtros</h5>
+
+          <form method="get" th:action="@{/busqueda-tutores}">
+            <div class="grupo-filtro">
+              <label for="curso">Curso o Tema</label>
+              <input type="text" class="form-control" id="curso" name="curso"
+                     th:value="${cursoBusqueda}" placeholder="Ej. Programación, Algoritmos...">
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i> Buscar
+              </button>
+              <a th:href="@{/busqueda-tutores}" class="btn btn-outline-primary">
+                Limpiar filtros
+              </a>
+            </div>
+          </form>
+        </aside>
+      </div>
+
+      <!-- Resultados -->
+      <div class="col-md-9">
+        <main class="grid-tutores">
+
+          <!-- Estado vacío: sin resultados para la búsqueda -->
+          <div th:if="${#lists.isEmpty(tutores)}" class="estado-vacio">
+            <span class="emoji">🔍</span>
+            <h5>No encontramos tutores para tu búsqueda</h5>
+            <p class="aclaracion">Prueba con otro curso o tema.</p>
+            <a th:href="@{/busqueda-tutores}" class="btn btn-outline-primary btn-sm">Ver todos los tutores</a>
+          </div>
+
+          <div th:each="tutor : ${tutores}" class="tarjeta-perfil-tutor">
+            <img th:src="${tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=100'}"
+                 th:data-fallback="${'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=100'}"
+                 onerror="this.onerror=null;this.src=this.dataset.fallback;"
+                 th:alt="${tutor.nombre}" class="foto-tutor">
+            <h5 class="fw-bold" style="color: var(--oscuro);" th:text="${tutor.nombre}">Nombre</h5>
+            <p class="univ-tutor"><i class="fa-solid fa-building-columns"></i> <span th:text="${tutor.universidad}">Universidad</span></p>
+            <p class="aclaracion mb-1"><span th:text="${tutor.carrera}">Carrera</span> · Ciclo <span th:text="${tutor.cicloAcademico}">Ciclo</span></p>
+            <div class="estrellitas" th:if="${cantResenPorTutor[tutor.id] > 0}">
+              <i class="fa-solid fa-star"></i>
+              <span th:text="${#numbers.formatDecimal(promediosPorTutor[tutor.id], 1, 1)}">4.5</span>
+              <span th:text="'(' + ${cantResenPorTutor[tutor.id]} + ')'"></span>
+            </div>
+            <div class="estrellitas" th:unless="${cantResenPorTutor[tutor.id] > 0}">
+              <span class="aclaracion">Sin reseñas aún</span>
+            </div>
+            <div class="precio-reserva mt-2 d-flex gap-2 justify-content-center">
+              <a th:href="@{'/tutor/perfil/' + ${tutor.id}}" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-user"></i> Ver perfil
+              </a>
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalReservar"
+                      th:data-id="${tutor.id}"
+                      th:data-nombre="${tutor.nombre}"
+                      onclick="abrirReserva(this.dataset.id, this.dataset.nombre)">
+                <i class="fa-solid fa-calendar-plus"></i> Reservar
+              </button>
+            </div>
+          </div>
+
+        </main>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL RESERVAR SESIÓN -->
+  <div class="modal fade" id="modalReservar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-tutor">
+
+        <div class="modal-header header-tutor">
+          <h5 class="modal-title label-modal">
+            <i class="fa-solid fa-calendar-plus"></i> Reservar sesión con <span id="reserva-tutor-nombre">—</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- novalidate: la validación la hace el servidor con las anotaciones
+               de la entity; los errores se muestran en rojo debajo de cada campo -->
+          <form id="formReservar" action="/alumno/agendar" method="post" class="form-modal" novalidate>
+            <input type="hidden" name="origen" value="/busqueda-tutores">
+
+            <div class="mb-3">
+              <label class="label-modal">Servicio <span class="texto-requerido">*</span></label>
+              <select class="form-select" name="idServicioTutor" id="reserva-servicios" required></select>
+              <div th:if="${erroresReserva != null and erroresReserva['servicioTutor'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['servicioTutor']}"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Fecha <span class="texto-requerido">*</span></label>
+              <input type="date" class="form-control" name="fecha" id="reserva-fecha" required>
+              <div th:if="${erroresReserva != null and erroresReserva['fecha'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['fecha']}"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Hora <span class="texto-requerido">*</span></label>
+              <input type="time" class="form-control" name="hora" id="reserva-hora" required>
+              <div th:if="${erroresReserva != null and erroresReserva['hora'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['hora']}"></div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="label-modal"><i class="fa-solid fa-money-bill-wave"></i> Pago de la sesión</span>
+              <span class="fw-bold" style="color: var(--azul); font-size: 1.2rem;" id="reserva-total">S/. 0.00</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="label-modal">Método de pago <span class="texto-requerido">*</span></label>
+              <select class="form-select" name="metodoPago" id="reserva-metodo" required onchange="cambiarMetodoPago()">
+                <option value="" disabled selected>Selecciona cómo pagar</option>
+                <option value="Yape">Yape</option>
+                <option value="Tarjeta">Tarjeta de crédito / débito</option>
+              </select>
+              <div th:if="${erroresReserva != null and erroresReserva['metodoPago'] != null}"
+                   class="text-danger small" th:text="${erroresReserva['metodoPago']}"></div>
+            </div>
+
+            <!-- Campos Yape -->
+            <div id="campos-yape" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Número de celular (Yape) <span class="texto-requerido">*</span></label>
+                <input type="tel" class="form-control" name="celularYape" id="reserva-celular-yape"
+                       inputmode="numeric" pattern="9\d{8}" maxlength="9"
+                       placeholder="Ej. 987654321">
+                <div th:if="${erroresReserva != null and erroresReserva['celularYape'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['celularYape']}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="label-modal">Código de aprobación de Yape <span class="texto-requerido">*</span></label>
+                <input type="text" class="form-control" name="codigoAprobacion" id="reserva-codigo-yape"
+                       inputmode="numeric" pattern="\d{6}" maxlength="6"
+                       placeholder="Ej. 845123">
+                <small class="aclaracion">Yapea al 999 999 999 (TutorApp) e ingresa el código de aprobación (6 dígitos) de tu operación.</small>
+                <div th:if="${erroresReserva != null and erroresReserva['codigoAprobacion'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['codigoAprobacion']}"></div>
+              </div>
+            </div>
+
+            <!-- Campos Tarjeta -->
+            <div id="campos-tarjeta" style="display:none;">
+              <div class="mb-3">
+                <label class="label-modal">Número de tarjeta <span class="texto-requerido">*</span></label>
+                <input type="text" class="form-control" name="numeroTarjeta" id="reserva-num-tarjeta"
+                       inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456">
+                <div th:if="${erroresReserva != null and erroresReserva['numeroTarjeta'] != null}"
+                     class="text-danger small" th:text="${erroresReserva['numeroTarjeta']}"></div>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="label-modal">Vencimiento <span class="texto-requerido">*</span></label>
+                  <input type="text" class="form-control" id="reserva-venc-tarjeta" maxlength="5" placeholder="MM/AA">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="label-modal">CVV <span class="texto-requerido">*</span></label>
+                  <input type="password" class="form-control" id="reserva-cvv-tarjeta"
+                         inputmode="numeric" maxlength="4" placeholder="123">
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-2 p-2 rounded aviso-info">
+              <i class="fa-solid fa-shield-halved"></i>
+              TutorApp <strong>retiene tu pago</strong> y se lo transfiere al tutor recién cuando la sesión
+              se completa. Si la sesión se cancela, <strong>se te reembolsa</strong> el monto completo.
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer footer-tutor">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" form="formReservar" class="btn btn-primary">
+            <i class="fa-solid fa-lock"></i> Pagar y reservar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp</footer>
+
+  <!-- Si la reserva tuvo errores, busqueda-tutores.js reabre el modal con lo llenado -->
+  <span id="datos-reserva" hidden th:if="${erroresReserva != null}"
+        th:data-idtutor="${reservaValores['idTutor']}"
+        th:data-idservicio="${reservaValores['idServicioTutor']}"
+        th:data-fecha="${reservaValores['fecha']}"
+        th:data-hora="${reservaValores['hora']}"
+        th:data-metodo="${reservaValores['metodoPago']}"
+        th:data-celular="${reservaValores['celularYape']}"
+        th:data-codigo="${reservaValores['codigoAprobacion']}"></span>
+
+  <!-- Datos del servidor para el modal de reserva (no es lógica: solo inyección) -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const serviciosPorTutor = /*[[${serviciosPorTutor}]]*/ {};
+    const nombresCurso      = /*[[${nombresCurso}]]*/ {};
+    /*]]>*/
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/busqueda-tutores.js"></script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <title>Registro de Tutor — TutorApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+  <nav class="navbar-publica">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="nav-logo" th:href="@{/}">Tutor<span>App</span></a>
+    </div>
+  </nav>
+
+  <div class="pagina-auth">
+    <div class="caja-auth caja-auth-tutor">
+
+      <div class="auth-logo">
+        <div class="marca">Tutor<span>App</span></div>
+        <p>Regístrate como tutor y empieza a ganar</p>
+      </div>
+
+      <h2 class="auth-titulo">Registro de tutor</h2>
+
+      <!-- novalidate: desactiva la validación del navegador para que
+           los mensajes salgan de Spring Validation (@NotBlank, @Email...) -->
+      <form th:action="@{/registro-tutor}" th:object="${tutor}" method="post" novalidate>
+
+        <div class="seccion-form">
+          <p class="seccion-form-titulo"><i class="fa-solid fa-user icono-label"></i>Datos personales</p>
+          <div class="campo-form">
+            <label for="nombre">Nombre completo</label>
+            <input type="text" th:field="*{nombre}" placeholder="Ej. Renzo Zegarra" required>
+            <div th:if="${#fields.hasErrors('nombre')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('nombre')}" th:text="${err}"></span>
+            </div>
+          </div>
+          <div class="campo-form">
+            <label for="email">Correo electrónico</label>
+            <input type="email" th:field="*{email}" placeholder="tucorreo@uni.edu.pe" required>
+            <div th:if="${#fields.hasErrors('email')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('email')}" th:text="${err}"></span>
+            </div>
+          </div>
+          <div class="campo-form">
+            <label for="contrasena">Contraseña</label>
+            <input type="password" th:field="*{contrasena}" placeholder="Mínimo 8 caracteres" required>
+            <div th:if="${#fields.hasErrors('contrasena')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('contrasena')}" th:text="${err}"></span>
+            </div>
+          </div>
+          <div class="campo-form">
+            <label for="confirmarContrasena">Confirmar contraseña</label>
+            <input type="password" id="confirmarContrasena" name="confirmarContrasena" placeholder="Repite tu contraseña" required>
+          </div>
+        </div>
+
+        <div class="seccion-form">
+          <p class="seccion-form-titulo"><i class="fa-solid fa-building-columns icono-label"></i>Información académica</p>
+          <div class="campo-form">
+            <label for="universidad">
+              Universidad
+              <button type="button" class="btn btn-link p-0 ms-1 text-secondary popover-info"
+                      data-bs-toggle="popover" data-bs-trigger="click"
+                      data-bs-title="¿Cuál universidad?"
+                      data-bs-content="Escribe el nombre de tu universidad. Ej: UPC, PUCP, UTP, UNMSM, UNI...">
+                <i class="fa-solid fa-circle-info fa-xs"></i>
+              </button>
+            </label>
+            <input type="text" th:field="*{universidad}" placeholder="Ej. UPC, PUCP, UTP..." required>
+            <div th:if="${#fields.hasErrors('universidad')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('universidad')}" th:text="${err}"></span>
+            </div>
+          </div>
+          <div class="campo-form">
+            <label for="carrera">
+              Carrera
+              <button type="button" class="btn btn-link p-0 ms-1 text-secondary popover-info"
+                      data-bs-toggle="popover" data-bs-trigger="click"
+                      data-bs-title="¿Cuál carrera?"
+                      data-bs-content="Ingresa el nombre completo de tu carrera. Ej: Ingeniería de Software, Contabilidad, Psicología...">
+                <i class="fa-solid fa-circle-info fa-xs"></i>
+              </button>
+            </label>
+            <input type="text" th:field="*{carrera}" placeholder="Ej. Ingeniería de Software" required>
+            <div th:if="${#fields.hasErrors('carrera')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('carrera')}" th:text="${err}"></span>
+            </div>
+          </div>
+          <div class="campo-form">
+            <label for="cicloAcademico">
+              Ciclo actual
+              <button type="button" class="btn btn-link p-0 ms-1 text-secondary popover-info"
+                      data-bs-toggle="popover" data-bs-trigger="click"
+                      data-bs-title="¿Por qué desde el ciclo 5?"
+                      data-bs-content="Solo aceptamos tutores desde el 5.° ciclo para garantizar que ya dominan los cursos que enseñan.">
+                <i class="fa-solid fa-circle-info fa-xs"></i>
+              </button>
+            </label>
+            <select th:field="*{cicloAcademico}" required>
+              <option value="" disabled selected>Selecciona tu ciclo</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+            <div th:if="${#fields.hasErrors('cicloAcademico')}" class="text-danger small">
+              <span th:each="err : ${#fields.errors('cicloAcademico')}" th:text="${err}"></span>
+            </div>
+          </div>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span th:text="${error}"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Crear cuenta como tutor</button>
+      </form>
+
+      <p class="auth-footer-texto mt-3">
+        ¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión</a>
+      </p>
+      <p class="auth-footer-texto">
+        ¿Quieres registrarte como alumno? <a th:href="@{/registro-alumno}">Aquí</a>
+      </p>
+
+    </div>
+  </div>
+
+  <footer>© 2026 TutorApp</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/registro-tutor.js"></script>
+</body>
+</html>
