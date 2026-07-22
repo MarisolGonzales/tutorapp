@@ -1,22 +1,72 @@
-// Fecha de hoy en formato YYYY-MM-DD (hora local), para el atributo min del input date.
-function hoyISO() {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+// Anticipación mínima para reservar: el tutor necesita tiempo para confirmar.
+const HORAS_ANTICIPACION = 1;
+
+// Momento más temprano que se puede agendar: de aquí en adelante todo es válido.
+function limiteReserva() {
+  return new Date(Date.now() + HORAS_ANTICIPACION * 60 * 60 * 1000);
 }
 
-// Si la fecha elegida es hoy, no deja elegir una hora ya pasada; otro día, sin límite.
+// Pasa una fecha a YYYY-MM-DD en hora local (el formato que usa el input date).
+function fechaISO(d) {
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+// La hora mínima solo limita al primer día disponible; en los días siguientes
+// el alumno puede elegir cualquier hora.
 function ajustarHoraMin() {
   const inputFecha = document.getElementById('reserva-fecha');
   const inputHora  = document.getElementById('reserva-hora');
-  if (inputFecha.value === hoyISO()) {
-    const ahora = new Date();
-    inputHora.min = String(ahora.getHours()).padStart(2, '0') + ':' +
-                    String(ahora.getMinutes()).padStart(2, '0');
+  if (!inputFecha || !inputHora) return;
+
+  const limite = limiteReserva();
+  if (inputFecha.value === fechaISO(limite)) {
+    inputHora.min = String(limite.getHours()).padStart(2, '0') + ':' +
+                    String(limite.getMinutes()).padStart(2, '0');
     if (inputHora.value && inputHora.value < inputHora.min) inputHora.value = '';
   } else {
     inputHora.removeAttribute('min');
   }
+}
+
+/* ── Formato de los datos de la tarjeta ── */
+
+// Agrupa el número en bloques de 4: "1234 5678 9012 3456" (16 dígitos)
+function formatearTarjeta(input) {
+  const digitos = input.value.replace(/\D/g, '').slice(0, 16);
+  input.value = digitos.replace(/(\d{4})(?=\d)/g, '$1 ');
+}
+
+// Inserta el "/" automáticamente: "0625" -> "06/25"
+function formatearVencimiento(input) {
+  let d = input.value.replace(/\D/g, '').slice(0, 4);
+  input.value = d.length >= 3 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+}
+
+function soloDigitos(input, max) {
+  input.value = input.value.replace(/\D/g, '').slice(0, max);
+}
+
+// El vencimiento debe ser MM/AA, con mes válido y que aún no haya expirado
+function vencimientoValido(valor) {
+  const m = /^(\d{2})\/(\d{2})$/.exec(valor);
+  if (!m) return false;
+  const mes = parseInt(m[1], 10);
+  if (mes < 1 || mes > 12) return false;
+  // La tarjeta vence al final de ese mes
+  const finDeMes = new Date(2000 + parseInt(m[2], 10), mes, 0, 23, 59, 59);
+  return finDeMes >= new Date();
+}
+
+// Revisa los datos de la tarjeta antes de enviar; devuelve el mensaje de error o ''
+function validarTarjeta() {
+  const numero = document.getElementById('reserva-num-tarjeta').value.replace(/\s/g, '');
+  const venc   = document.getElementById('reserva-venc-tarjeta').value;
+  const cvv    = document.getElementById('reserva-cvv-tarjeta').value;
+
+  if (numero.length !== 16) return 'El número de tarjeta debe tener 16 dígitos.';
+  if (!vencimientoValido(venc)) return 'La fecha de vencimiento no es válida o ya expiró.';
+  if (cvv.length !== 3) return 'El CVV debe tener 3 dígitos.';
+  return '';
 }
 
 function abrirReserva(idTutor, nombreTutor) {
@@ -43,9 +93,10 @@ function abrirReserva(idTutor, nombreTutor) {
 
   const inputFecha = document.getElementById('reserva-fecha');
   inputFecha.value = '';
-  inputFecha.min = hoyISO(); // impide elegir fechas pasadas
+  // El primer día seleccionable es el del límite (hoy, o mañana si ya es muy tarde)
+  inputFecha.min = fechaISO(limiteReserva());
   document.getElementById('reserva-hora').value  = '';
-  ajustarHoraMin(); // impide elegir una hora pasada si la fecha es hoy
+  ajustarHoraMin();
 
   // Reinicia la sección de pago
   document.getElementById('reserva-metodo').value = '';
@@ -90,6 +141,26 @@ function cambiarMetodoPago() {
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('reserva-servicios').addEventListener('change', actualizarTotal);
   document.getElementById('reserva-fecha').addEventListener('change', ajustarHoraMin);
+
+  // Formateo automático mientras el alumno escribe los datos de la tarjeta
+  const inputNum  = document.getElementById('reserva-num-tarjeta');
+  const inputVenc = document.getElementById('reserva-venc-tarjeta');
+  const inputCvv  = document.getElementById('reserva-cvv-tarjeta');
+  inputNum.addEventListener('input',  function() { formatearTarjeta(this); });
+  inputVenc.addEventListener('input', function() { formatearVencimiento(this); });
+  inputCvv.addEventListener('input',  function() { soloDigitos(this, 3); });
+
+  // Antes de enviar, se revisan los datos de la tarjeta en el navegador
+  document.getElementById('formReservar').addEventListener('submit', function(e) {
+    const cajaError = document.getElementById('error-tarjeta');
+    if (document.getElementById('reserva-metodo').value !== 'Tarjeta') {
+      cajaError.textContent = '';
+      return;
+    }
+    const error = validarTarjeta();
+    cajaError.textContent = error;
+    if (error) e.preventDefault();
+  });
 
   // Si la reserva tuvo errores, se reabre el modal con lo que el alumno había llenado
   const datos = document.getElementById('datos-reserva');

@@ -49,8 +49,8 @@ public class PagoService {
             String digitos = numeroTarjeta == null ? "" : numeroTarjeta.replaceAll("\\s", "");
             if (digitos.isEmpty()) {
                 errores.put("numeroTarjeta", "El número de tarjeta no puede estar vacío");
-            } else if (!digitos.matches("\\d{13,19}")) {
-                errores.put("numeroTarjeta", "El número de tarjeta debe tener entre 13 y 19 dígitos");
+            } else if (!digitos.matches("\\d{16}")) {
+                errores.put("numeroTarjeta", "El número de tarjeta debe tener 16 dígitos");
             }
         } else {
             errores.put("metodoPago", "Selecciona un método de pago (Yape o Tarjeta)");
@@ -129,7 +129,7 @@ public class PagoService {
         return pagoRepository.findBySesion_ServicioTutor_Tutor_IdOrderByFechaPagoDesc(idTutor);
     }
 
-    /** Mapa idSesion -> Pago con todos los pagos del alumno (para las tablas del panel). */
+    /** Mapa idSesion -> Pago con todos los pagos del alumno*/
     public Map<Long, Pago> pagosPorSesionDeAlumno(Long idAlumno) {
         Map<Long, Pago> map = new HashMap<>();
         pagoRepository.findBySesion_Alumno_Id(idAlumno)

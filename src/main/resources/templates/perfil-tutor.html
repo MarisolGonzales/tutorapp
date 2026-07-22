@@ -168,6 +168,7 @@
             <div class="mb-3">
               <label class="label-modal">Hora <span class="texto-requerido">*</span></label>
               <input type="time" class="form-control" name="hora" id="reserva-hora" required>
+              <small class="aclaracion">Reserva con al menos 1 hora de anticipación para que el tutor pueda confirmar.</small>
               <div th:if="${erroresReserva != null and erroresReserva['hora'] != null}"
                    class="text-danger small" th:text="${erroresReserva['hora']}"></div>
             </div>
@@ -223,14 +224,17 @@
               <div class="row">
                 <div class="col-6 mb-3">
                   <label class="label-modal">Vencimiento <span class="texto-requerido">*</span></label>
-                  <input type="text" class="form-control" id="reserva-venc-tarjeta" maxlength="5" placeholder="MM/AA">
+                  <input type="text" class="form-control" id="reserva-venc-tarjeta"
+                         inputmode="numeric" maxlength="5" placeholder="MM/AA">
                 </div>
                 <div class="col-6 mb-3">
                   <label class="label-modal">CVV <span class="texto-requerido">*</span></label>
                   <input type="password" class="form-control" id="reserva-cvv-tarjeta"
-                         inputmode="numeric" maxlength="4" placeholder="123">
+                         inputmode="numeric" maxlength="3" placeholder="123">
                 </div>
               </div>
+              <!-- Errores de tarjeta validados en el navegador (formato y vencimiento) -->
+              <div id="error-tarjeta" class="text-danger small mb-2"></div>
             </div>
 
             <div class="p-2 rounded aviso-info">

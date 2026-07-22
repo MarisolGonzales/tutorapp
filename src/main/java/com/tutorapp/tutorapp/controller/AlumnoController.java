@@ -1,6 +1,7 @@
 package com.tutorapp.tutorapp.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,9 @@ import jakarta.validation.Validator;
 
 @Controller
 public class AlumnoController {
+
+    // Anticipación mínima con la que un alumno puede reservar una sesión
+    private static final int HORAS_ANTICIPACION = 1;
 
     @Autowired
     private AlumnoService alumnoService;
@@ -145,7 +149,7 @@ public class AlumnoController {
             }
         }
 
-        // Valida los cambios con las anotaciones de la entity (@NotBlank, @Pattern...)
+        // Valida los cambios con las anotaciones de la entity
         validator.validate(alumno)
                 .forEach(v -> erroresPerfil.putIfAbsent(v.getPropertyPath().toString(), v.getMessage()));
 
@@ -178,7 +182,7 @@ public class AlumnoController {
 
         Resena resena = new Resena(sesion, calificacion, comentario);
 
-        // Valida la reseña con las anotaciones de la entity (@Min, @Max...)
+        // Valida la reseña con las anotaciones de la entity
         var errores = validator.validate(resena);
         if (!errores.isEmpty()) {
             ra.addFlashAttribute("error", errores.iterator().next().getMessage());
@@ -229,9 +233,11 @@ public class AlumnoController {
 
         if (fecha != null && fecha.isBefore(LocalDate.now())) {
             erroresReserva.put("fecha", "La fecha de la sesión no puede ser pasada");
-        } else if (fecha != null && fecha.isEqual(LocalDate.now())
-                && hora != null && hora.isBefore(LocalTime.now())) {
-            erroresReserva.put("hora", "La hora de la sesión no puede ser pasada");
+        } else if (fecha != null && hora != null
+                && LocalDateTime.of(fecha, hora).isBefore(LocalDateTime.now().plusHours(HORAS_ANTICIPACION))) {
+            // El tutor necesita margen para revisar y confirmar la solicitud
+            erroresReserva.put("hora",
+                    "Debes reservar con al menos " + HORAS_ANTICIPACION + " hora de anticipación");
         }
 
         // Valida los datos del pago (método, celular/código de Yape o tarjeta)
