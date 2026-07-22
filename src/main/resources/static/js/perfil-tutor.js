@@ -1,27 +1,19 @@
-// Anticipación mínima para reservar: el tutor necesita tiempo para confirmar.
-const HORAS_ANTICIPACION = 1;
-
-// Momento más temprano que se puede agendar: de aquí en adelante todo es válido.
-function limiteReserva() {
-  return new Date(Date.now() + HORAS_ANTICIPACION * 60 * 60 * 1000);
-}
-
 // Pasa una fecha a YYYY-MM-DD en hora local (el formato que usa el input date).
 function fechaISO(d) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-// La hora mínima solo limita al primer día disponible; en los días siguientes
-// el alumno puede elegir cualquier hora.
+// La hora mínima solo limita al día de hoy (no se puede elegir una hora ya pasada);
+// en los días siguientes el alumno puede elegir cualquier hora.
 function ajustarHoraMin() {
   const inputFecha = document.getElementById('reserva-fecha');
   const inputHora  = document.getElementById('reserva-hora');
   if (!inputFecha || !inputHora) return;
 
-  const limite = limiteReserva();
-  if (inputFecha.value === fechaISO(limite)) {
-    inputHora.min = String(limite.getHours()).padStart(2, '0') + ':' +
-                    String(limite.getMinutes()).padStart(2, '0');
+  const ahora = new Date();
+  if (inputFecha.value === fechaISO(ahora)) {
+    inputHora.min = String(ahora.getHours()).padStart(2, '0') + ':' +
+                    String(ahora.getMinutes()).padStart(2, '0');
     if (inputHora.value && inputHora.value < inputHora.min) inputHora.value = '';
   } else {
     inputHora.removeAttribute('min');
@@ -118,8 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Bloquea fechas y horas pasadas en el modal de reserva (igual que en la búsqueda)
   const inputFecha = document.getElementById('reserva-fecha');
   if (inputFecha) {
-    // El primer día seleccionable es el del límite (hoy, o mañana si ya es muy tarde)
-    inputFecha.min = fechaISO(limiteReserva());
+    inputFecha.min = fechaISO(new Date()); // impide elegir fechas pasadas
     inputFecha.addEventListener('change', ajustarHoraMin);
   }
 

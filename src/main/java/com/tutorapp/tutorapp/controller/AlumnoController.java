@@ -43,9 +43,6 @@ import jakarta.validation.Validator;
 @Controller
 public class AlumnoController {
 
-    // Anticipación mínima con la que un alumno puede reservar una sesión
-    private static final int HORAS_ANTICIPACION = 1;
-
     @Autowired
     private AlumnoService alumnoService;
 
@@ -234,10 +231,8 @@ public class AlumnoController {
         if (fecha != null && fecha.isBefore(LocalDate.now())) {
             erroresReserva.put("fecha", "La fecha de la sesión no puede ser pasada");
         } else if (fecha != null && hora != null
-                && LocalDateTime.of(fecha, hora).isBefore(LocalDateTime.now().plusHours(HORAS_ANTICIPACION))) {
-            // El tutor necesita margen para revisar y confirmar la solicitud
-            erroresReserva.put("hora",
-                    "Debes reservar con al menos " + HORAS_ANTICIPACION + " hora de anticipación");
+                && LocalDateTime.of(fecha, hora).isBefore(LocalDateTime.now())) {
+            erroresReserva.put("hora", "La hora de la sesión no puede ser pasada");
         }
 
         // Valida los datos del pago (método, celular/código de Yape o tarjeta)
