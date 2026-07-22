@@ -3,6 +3,7 @@ package com.tutorapp.tutorapp.controller;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +232,9 @@ public class AlumnoController {
         if (fecha != null && fecha.isBefore(LocalDate.now())) {
             erroresReserva.put("fecha", "La fecha de la sesión no puede ser pasada");
         } else if (fecha != null && hora != null
-                && LocalDateTime.of(fecha, hora).isBefore(LocalDateTime.now())) {
+                // Se compara solo hasta los minutos: el input no maneja segundos,
+                // así reservar en el minuto actual sigue siendo válido.
+                && LocalDateTime.of(fecha, hora).isBefore(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES))) {
             erroresReserva.put("hora", "La hora de la sesión no puede ser pasada");
         }
 
