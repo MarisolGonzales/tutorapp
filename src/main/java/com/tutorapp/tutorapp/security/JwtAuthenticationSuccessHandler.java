@@ -2,6 +2,8 @@ package com.tutorapp.tutorapp.security;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,6 +26,8 @@ import jakarta.servlet.http.HttpSession;
  */
 @Component
 public class JwtAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationSuccessHandler.class);
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -73,6 +77,9 @@ public class JwtAuthenticationSuccessHandler implements AuthenticationSuccessHan
         session.setAttribute("usuarioId", id);
         session.setAttribute("usuarioNombre", nombre);
         session.setAttribute("usuarioTipo", rol);
+
+        // Se registra el acceso sin exponer el correo, la contraseña ni el token
+        log.info("Inicio de sesión correcto: usuario {} con rol {}", id, rol);
 
         response.sendRedirect(destino);
     }

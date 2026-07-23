@@ -5,9 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Strings;
 import com.tutorapp.tutorapp.model.Pago;
 import com.tutorapp.tutorapp.model.Pago.EstadoPago;
 import com.tutorapp.tutorapp.model.Pago.MetodoPago;
@@ -18,6 +22,8 @@ import jakarta.validation.Validator;
 
 @Service
 public class PagoService {
+
+    private static final Logger log = LoggerFactory.getLogger(PagoService.class);
 
     @Autowired
     private PagoRepository pagoRepository;
@@ -35,18 +41,20 @@ public class PagoService {
         Map<String, String> errores = new HashMap<>();
 
         if ("Yape".equalsIgnoreCase(metodoPago)) {
-            if (celularYape == null || celularYape.isBlank()) {
+            // StringUtils.isBlank (Commons): cubre null, cadena vacía y solo espacios
+            if (StringUtils.isBlank(celularYape)) {
                 errores.put("celularYape", "El número de celular no puede estar vacío");
             } else if (!celularYape.trim().matches("9\\d{8}")) {
                 errores.put("celularYape", "El número de celular de Yape debe tener 9 dígitos y empezar con 9");
             }
-            if (codigoAprobacion == null || codigoAprobacion.isBlank()) {
+            if (StringUtils.isBlank(codigoAprobacion)) {
                 errores.put("codigoAprobacion", "El código de aprobación no puede estar vacío");
             } else if (!codigoAprobacion.trim().matches("\\d{6}")) {
                 errores.put("codigoAprobacion", "El código de aprobación de Yape debe tener exactamente 6 dígitos");
             }
         } else if ("Tarjeta".equalsIgnoreCase(metodoPago)) {
-            String digitos = numeroTarjeta == null ? "" : numeroTarjeta.replaceAll("\\s", "");
+            // Strings.nullToEmpty (Guava) evita comprobar el null a mano
+            String digitos = StringUtils.deleteWhitespace(Strings.nullToEmpty(numeroTarjeta));
             if (digitos.isEmpty()) {
                 errores.put("numeroTarjeta", "El número de tarjeta no puede estar vacío");
             } else if (!digitos.matches("\\d{16}")) {
@@ -78,8 +86,9 @@ public class PagoService {
             referencia = "Yape " + celularYape.trim() + " · Cód. " + codigoAprobacion.trim();
         } else {
             metodo = MetodoPago.Tarjeta;
-            String digitos = numeroTarjeta.replaceAll("\\s", "");
-            referencia = "Tarjeta **** " + digitos.substring(digitos.length() - 4);
+            // Por seguridad solo se guardan los 4 últimos dígitos, nunca la tarjeta completa
+            String digitos = StringUtils.deleteWhitespace(numeroTarjeta);
+            referencia = "Tarjeta **** " + StringUtils.right(digitos, 4);
         }
 
         Pago pago = new Pago(sesion, sesion.getServicioTutor().getPrecio(), metodo, referencia);
@@ -90,6 +99,9 @@ public class PagoService {
             throw new IllegalArgumentException(errores.iterator().next().getMessage());
         }
 
+        // Se registra el evento sin datos sensibles: ni el número de tarjeta ni el código de Yape
+        log.info("Pago retenido por {} para la sesión {} (método: {})",
+                pago.getMonto(), sesion.getId(), metodo);
         return pagoRepository.save(pago);
     }
 
@@ -99,6 +111,7 @@ public class PagoService {
             if (p.getEstado() == EstadoPago.Retenido) {
                 p.setEstado(EstadoPago.Liberado);
                 pagoRepository.save(p);
+                log.info("Pago liberado al tutor por la sesión {}", idSesion);
             }
         });
     }
@@ -109,6 +122,7 @@ public class PagoService {
             if (p.getEstado() == EstadoPago.Retenido) {
                 p.setEstado(EstadoPago.Reembolsado);
                 pagoRepository.save(p);
+                log.info("Pago reembolsado al alumno por la sesión {}", idSesion);
             }
         });
     }

@@ -162,6 +162,11 @@
                         <td th:with="pago=${pagosPorSesion[sesion.id]}">
                           <span th:if="${pago != null}" class="badge-estado estado-confirmado"
                                 th:text="'Pagado (' + ${pago.metodo} + ')'">Pagado</span>
+                          <a th:if="${pago != null}"
+                             th:href="@{/alumno/sesion/{id}/recibo(id=${sesion.id})}"
+                             class="btn btn-link btn-sm p-0 ms-1" title="Descargar recibo en PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
+                          </a>
                           <span th:if="${pago == null}" class="aclaracion">—</span>
                         </td>
                         <td><span class="badge-estado estado-confirmado">Confirmada</span></td>
@@ -187,6 +192,11 @@
                         <td th:with="pago=${pagosPorSesion[sesion.id]}">
                           <span th:if="${pago != null}" class="badge-estado estado-confirmado"
                                 th:text="'Pagado (' + ${pago.metodo} + ')'">Pagado</span>
+                          <a th:if="${pago != null}"
+                             th:href="@{/alumno/sesion/{id}/recibo(id=${sesion.id})}"
+                             class="btn btn-link btn-sm p-0 ms-1" title="Descargar recibo en PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
+                          </a>
                           <span th:if="${pago == null}" class="aclaracion">—</span>
                         </td>
                         <td><span class="badge-estado estado-pendiente">Pendiente</span></td>
@@ -240,6 +250,11 @@
                           <span th:if="${pago != null and pago.estado.name() != 'Reembolsado'}"
                                 class="badge-estado estado-confirmado"
                                 th:text="'Pagado (' + ${pago.metodo} + ')'">Pagado</span>
+                          <a th:if="${pago != null}"
+                             th:href="@{/alumno/sesion/{id}/recibo(id=${sesion.id})}"
+                             class="btn btn-link btn-sm p-0 ms-1" title="Descargar recibo en PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
+                          </a>
                           <span th:if="${pago == null}" class="aclaracion">—</span>
                         </td>
                         <td>

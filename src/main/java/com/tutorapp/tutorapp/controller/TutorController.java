@@ -3,10 +3,16 @@ package com.tutorapp.tutorapp.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +23,7 @@ import com.tutorapp.tutorapp.model.Tutor;
 import com.tutorapp.tutorapp.service.AlumnoService;
 import com.tutorapp.tutorapp.service.FotoPerfilService;
 import com.tutorapp.tutorapp.service.PagoService;
+import com.tutorapp.tutorapp.service.ReporteExcelService;
 import com.tutorapp.tutorapp.service.RetiroService;
 import com.tutorapp.tutorapp.service.TutorService;
 
@@ -26,6 +33,11 @@ import jakarta.validation.Validator;
 
 @Controller
 public class TutorController {
+
+    private static final Logger log = LoggerFactory.getLogger(TutorController.class);
+
+    @Autowired
+    private ReporteExcelService reporteExcelService;
 
     @Autowired
     private TutorService tutorService;
@@ -69,6 +81,27 @@ public class TutorController {
         }
         ra.addFlashAttribute("mensaje", "¡Cuenta creada! Ya puedes iniciar sesión.");
         return "redirect:/login";
+    }
+
+    /**
+     * Descarga en Excel el detalle de pagos del tutor autenticado.
+     * Solo se exportan los pagos del propio tutor, tomados de su sesión activa.
+     */
+    @GetMapping("/tutor/pagos/excel")
+    public ResponseEntity<byte[]> descargarPagosExcel(HttpSession session) {
+        Long idTutor = (Long) session.getAttribute("usuarioId");
+        if (idTutor == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+
+        byte[] archivo = reporteExcelService.generarReportePagos(pagoService.pagosDeTutor(idTutor));
+        log.info("El tutor {} descargó su reporte de pagos en Excel", idTutor);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=pagos-tutorapp.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(archivo);
     }
 
     @PostMapping("/tutor/editar-perfil")

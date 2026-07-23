@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,8 @@ import jakarta.validation.Validator;
 
 @Service
 public class RetiroService {
+
+    private static final Logger log = LoggerFactory.getLogger(RetiroService.class);
 
     @Autowired
     private RetiroRepository retiroRepository;
@@ -42,16 +47,17 @@ public class RetiroService {
         }
 
         if ("Yape".equalsIgnoreCase(metodoRetiro)) {
-            if (celularYape == null || celularYape.isBlank()) {
+            // StringUtils.isBlank (Commons): cubre null, cadena vacía y solo espacios
+            if (StringUtils.isBlank(celularYape)) {
                 errores.put("celularYape", "El número de celular no puede estar vacío");
             } else if (!celularYape.trim().matches("9\\d{8}")) {
                 errores.put("celularYape", "El número de celular de Yape debe tener 9 dígitos y empezar con 9");
             }
         } else if ("CuentaBancaria".equalsIgnoreCase(metodoRetiro)) {
-            if (banco == null || banco.isBlank()) {
+            if (StringUtils.isBlank(banco)) {
                 errores.put("banco", "El banco no puede estar vacío");
             }
-            String digitos = cuentaBancaria == null ? "" : cuentaBancaria.replaceAll("[\\s-]", "");
+            String digitos = StringUtils.defaultString(cuentaBancaria).replaceAll("[\\s-]", "");
             if (digitos.isEmpty()) {
                 errores.put("cuentaBancaria", "El número de cuenta no puede estar vacío");
             } else if (!digitos.matches("\\d{10,20}")) {
@@ -96,12 +102,16 @@ public class RetiroService {
             throw new IllegalArgumentException(errores.iterator().next().getMessage());
         }
 
+        // El destino ya viaja enmascarado: nunca se registra la cuenta completa
+        log.info("Retiro registrado por {} para el tutor {} (método: {})",
+                monto, tutor.getId(), metodo);
         return retiroRepository.save(retiro);
     }
 
     /** Deja visibles solo los últimos 4 dígitos de la cuenta (ej. ****5432). */
     private String enmascararCuenta(String digitos) {
-        return "****" + digitos.substring(digitos.length() - 4);
+        // StringUtils.right (Commons) evita calcular índices y no falla con cadenas cortas
+        return "****" + StringUtils.right(digitos, 4);
     }
 
     public List<Retiro> retirosDeTutor(Long idTutor) {

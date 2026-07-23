@@ -10,9 +10,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.tutorapp.tutorapp.model.Alumno;
+import com.tutorapp.tutorapp.model.Pago;
 import com.tutorapp.tutorapp.model.Resena;
 import com.tutorapp.tutorapp.model.Sesion;
 import com.tutorapp.tutorapp.model.Sesion.EstadoSesion;
@@ -32,6 +39,7 @@ import com.tutorapp.tutorapp.model.ServicioTutor;
 import com.tutorapp.tutorapp.service.AlumnoService;
 import com.tutorapp.tutorapp.service.FotoPerfilService;
 import com.tutorapp.tutorapp.service.PagoService;
+import com.tutorapp.tutorapp.service.ReciboPdfService;
 import com.tutorapp.tutorapp.service.ResenaService;
 import com.tutorapp.tutorapp.service.SesionService;
 import com.tutorapp.tutorapp.service.ServicioTutorService;
@@ -43,6 +51,11 @@ import jakarta.validation.Validator;
 
 @Controller
 public class AlumnoController {
+
+    private static final Logger log = LoggerFactory.getLogger(AlumnoController.class);
+
+    @Autowired
+    private ReciboPdfService reciboPdfService;
 
     @Autowired
     private AlumnoService alumnoService;
@@ -88,6 +101,34 @@ public class AlumnoController {
         model.addAttribute("sesionesConResena", sesionesConResena);
         model.addAttribute("pagosPorSesion", pagoService.pagosPorSesionDeAlumno(idAlumno));
         return "panel-alumno";
+    }
+
+    /**
+     * Descarga en PDF el comprobante de pago de una sesión.
+     * Solo el alumno dueño de la sesión puede obtener su propio recibo.
+     */
+    @GetMapping("/alumno/sesion/{idSesion}/recibo")
+    public ResponseEntity<byte[]> descargarRecibo(@PathVariable Long idSesion, HttpSession session) {
+        Long idAlumno = (Long) session.getAttribute("usuarioId");
+        if (idAlumno == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Pago pago = pagoService.buscarPorSesion(idSesion).orElse(null);
+        // Se verifica que el pago exista y que pertenezca al alumno autenticado
+        if (pago == null || !pago.getSesion().getAlumno().getId().equals(idAlumno)) {
+            log.warn("Intento de descarga de un recibo ajeno: alumno {} sobre la sesión {}", idAlumno, idSesion);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        byte[] archivo = reciboPdfService.generarRecibo(pago);
+        log.info("El alumno {} descargó el recibo de la sesión {}", idAlumno, idSesion);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=recibo-tutorapp-" + pago.getId() + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(archivo);
     }
 
     @PostMapping("/registro-alumno")

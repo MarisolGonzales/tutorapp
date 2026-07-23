@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Configuración de Logback para TutorApp.
+
+    Por seguridad, en los mensajes de log NUNCA se registran contraseñas,
+    tokens JWT, códigos de aprobación de Yape ni números de tarjeta completos.
+    Solo se registran identificadores y eventos del negocio.
+-->
+<configuration>
+
+    <appender name="CONSOLA" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Eventos propios de la aplicación -->
+    <logger name="com.tutorapp.tutorapp" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLA"/>
+    </root>
+
+</configuration>

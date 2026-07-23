@@ -5,20 +5,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.google.common.collect.ImmutableSet;
 
 @Service
 public class FotoPerfilService {
 
+    private static final Logger log = LoggerFactory.getLogger(FotoPerfilService.class);
+
     // Carpeta lógica dentro de Cloudinary donde se agrupan las fotos de perfil
     private static final String CARPETA_CLOUDINARY = "tutorapp/fotos-perfil";
 
-    private static final Set<String> TIPOS_PERMITIDOS = Set.of("image/jpeg", "image/png", "image/webp");
+    // ImmutableSet (Guava): colección inmutable, no puede alterarse en tiempo de ejecución
+    private static final Set<String> TIPOS_PERMITIDOS =
+            ImmutableSet.of("image/jpeg", "image/png", "image/webp");
     private static final long TAMANO_MAXIMO = 2 * 1024 * 1024; // 2 MB
 
     @Autowired
@@ -44,8 +51,11 @@ public class FotoPerfilService {
                             "folder", CARPETA_CLOUDINARY,
                             "public_id", UUID.randomUUID().toString(),
                             "resource_type", "image"));
-            return resultado.get("secure_url").toString();
+            String url = resultado.get("secure_url").toString();
+            log.info("Foto de perfil subida correctamente a Cloudinary");
+            return url;
         } catch (IOException e) {
+            log.error("Error al subir la foto de perfil a Cloudinary", e);
             throw new IllegalArgumentException("No se pudo guardar la foto. Intenta de nuevo.");
         }
     }

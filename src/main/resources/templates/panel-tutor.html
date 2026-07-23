@@ -321,7 +321,13 @@
 
             <div class="card">
               <div class="card-body p-4">
-                <h5 class="titulo-azul mb-3"><i class="fa-solid fa-wallet"></i> Detalle de pagos</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="titulo-azul mb-0"><i class="fa-solid fa-wallet"></i> Detalle de pagos</h5>
+                  <a th:href="@{/tutor/pagos/excel}" class="btn btn-outline-primary btn-sm"
+                     th:if="${not #lists.isEmpty(pagos)}">
+                    <i class="fa-solid fa-file-excel"></i> Descargar Excel
+                  </a>
+                </div>
 
                 <div th:if="${#lists.isEmpty(pagos)}">
                   <p class="aclaracion">Aún no tienes pagos registrados. Cuando un alumno reserve una sesión contigo, aparecerá aquí.</p>
