@@ -73,7 +73,7 @@ public class ScriptsMantenimiento {
     }
 
     /**
-     * Registro periódico de actividad (heartbeat) que confirma que el
+     * Registro periódico de actividad que confirma que el
      * sistema se encuentra operativo.
      * Ejecuta: cada hora en punto.
      */
