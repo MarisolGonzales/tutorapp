@@ -42,7 +42,7 @@
 
     <div class="row g-4 align-items-start">
 
-      <!-- Columna izquierda: info del tutor -->
+      <!-- Columna izquierda -->
       <div class="col-md-4">
         <div class="card text-center p-4 shadow-sm">
           <img th:src="${tutor.fotoPerfil != null ? tutor.fotoPerfil : 'https://ui-avatars.com/api/?name=' + #strings.replace(tutor.nombre,' ','+') + '&background=2563EB&color=fff&size=120'}"
@@ -78,7 +78,7 @@
         </div>
       </div>
 
-      <!-- Columna derecha: servicios -->
+      <!-- Columna derecha -->
       <div class="col-md-8">
 
         <div class="card mb-4 shadow-sm"

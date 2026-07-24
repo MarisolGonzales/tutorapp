@@ -50,10 +50,10 @@ public class ServicioTutorController {
         }
 
         Curso curso = cursoService.buscarOCrear(nombreCurso.trim());
-        // Todas las tutorías son virtuales (videollamada integrada de la página)
+        // Todas las tutorías son virtuales
         ServicioTutor servicio = new ServicioTutor(tutor, curso, precio, "Virtual", descripcion);
 
-        // Valida el servicio con las anotaciones de la entity (@Positive, @Pattern...)
+        // Valida el servicio con las anotaciones de la entity
         var errores = validator.validate(servicio);
         if (!errores.isEmpty()) {
             ra.addFlashAttribute("error", errores.iterator().next().getMessage());

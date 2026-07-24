@@ -96,7 +96,7 @@ public class RetiroService {
 
         Retiro retiro = new Retiro(tutor, monto, metodo, destino);
 
-        // Valida el retiro con las anotaciones de la entity (@NotNull, @Positive...)
+        // Valida el retiro con las anotaciones de la entity
         var errores = validator.validate(retiro);
         if (!errores.isEmpty()) {
             throw new IllegalArgumentException(errores.iterator().next().getMessage());

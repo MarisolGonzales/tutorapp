@@ -33,15 +33,15 @@ public class PagoService {
 
     /**
      * Valida los datos del pago y devuelve los errores agrupados por campo
-     * (para mostrarlos en rojo debajo de cada input, como en los registros).
      * Devuelve un mapa vacío si todo es válido.
      */
+
     public Map<String, String> validar(String metodoPago, String celularYape,
             String codigoAprobacion, String numeroTarjeta) {
         Map<String, String> errores = new HashMap<>();
 
         if ("Yape".equalsIgnoreCase(metodoPago)) {
-            // StringUtils.isBlank (Commons): cubre null, cadena vacía y solo espacios
+            
             if (StringUtils.isBlank(celularYape)) {
                 errores.put("celularYape", "El número de celular no puede estar vacío");
             } else if (!celularYape.trim().matches("9\\d{8}")) {
@@ -53,7 +53,7 @@ public class PagoService {
                 errores.put("codigoAprobacion", "El código de aprobación de Yape debe tener exactamente 6 dígitos");
             }
         } else if ("Tarjeta".equalsIgnoreCase(metodoPago)) {
-            // Strings.nullToEmpty (Guava) evita comprobar el null a mano
+            
             String digitos = StringUtils.deleteWhitespace(Strings.nullToEmpty(numeroTarjeta));
             if (digitos.isEmpty()) {
                 errores.put("numeroTarjeta", "El número de tarjeta no puede estar vacío");
@@ -69,9 +69,9 @@ public class PagoService {
 
     /**
      * Registra el pago simulado de una sesión y deja el dinero RETENIDO por el
-     * sistema hasta que la sesión se complete. Los datos deben venir ya
-     * validados con validar(); si no lo están, lanza IllegalArgumentException.
+     * sistema hasta que la sesión se complete.
      */
+
     public Pago registrar(Sesion sesion, String metodoPago, String celularYape,
             String codigoAprobacion, String numeroTarjeta) {
         Map<String, String> erroresPago = validar(metodoPago, celularYape, codigoAprobacion, numeroTarjeta);
@@ -99,13 +99,13 @@ public class PagoService {
             throw new IllegalArgumentException(errores.iterator().next().getMessage());
         }
 
-        // Se registra el evento sin datos sensibles: ni el número de tarjeta ni el código de Yape
+        // Se registra el evento sin datos sensibles
         log.info("Pago retenido por {} para la sesión {} (método: {})",
                 pago.getMonto(), sesion.getId(), metodo);
         return pagoRepository.save(pago);
     }
 
-    /** El tutor completó la sesión: el sistema le transfiere el dinero. */
+    //El tutor completó la sesión: el sistema le transfiere el dinero.
     public void liberarPorSesion(Long idSesion) {
         pagoRepository.findBySesion_Id(idSesion).ifPresent(p -> {
             if (p.getEstado() == EstadoPago.Retenido) {
@@ -116,7 +116,7 @@ public class PagoService {
         });
     }
 
-    /** La sesión se canceló o rechazó: el sistema devuelve el dinero al alumno. */
+    // La sesión se canceló o rechazó: el sistema devuelve el dinero al alumno.
     public void reembolsarPorSesion(Long idSesion) {
         pagoRepository.findBySesion_Id(idSesion).ifPresent(p -> {
             if (p.getEstado() == EstadoPago.Retenido) {
@@ -127,10 +127,9 @@ public class PagoService {
         });
     }
 
-    /**
-     * La sesión va a ser eliminada (tutor rechazó la solicitud): se borra su pago
-     * para no violar la clave foránea. En la simulación equivale a un reembolso.
-     */
+    
+    //El tutor rechazó la solicitud): se borra su pago
+    
     public void eliminarPorSesion(Long idSesion) {
         pagoRepository.findBySesion_Id(idSesion).ifPresent(pagoRepository::delete);
     }
@@ -143,7 +142,7 @@ public class PagoService {
         return pagoRepository.findBySesion_ServicioTutor_Tutor_IdOrderByFechaPagoDesc(idTutor);
     }
 
-    /** Mapa idSesion -> Pago con todos los pagos del alumno*/
+    // Mapa idSesion -> Pago con todos los pagos del alumno
     public Map<Long, Pago> pagosPorSesionDeAlumno(Long idAlumno) {
         Map<Long, Pago> map = new HashMap<>();
         pagoRepository.findBySesion_Alumno_Id(idAlumno)
@@ -151,12 +150,12 @@ public class PagoService {
         return map;
     }
 
-    /** Total ya transferido al tutor (sesiones completadas). */
+    // Total ya transferido al tutor (sesiones completadas).
     public double totalLiberado(Long idTutor) {
         return sumar(pagoRepository.findBySesion_ServicioTutor_Tutor_IdAndEstado(idTutor, EstadoPago.Liberado));
     }
 
-    /** Total retenido por el sistema (sesiones aún no completadas). */
+    // Total retenido por el sistema (sesiones aún no completadas).
     public double totalRetenido(Long idTutor) {
         return sumar(pagoRepository.findBySesion_ServicioTutor_Tutor_IdAndEstado(idTutor, EstadoPago.Retenido));
     }

@@ -20,10 +20,10 @@ public class FotoPerfilService {
 
     private static final Logger log = LoggerFactory.getLogger(FotoPerfilService.class);
 
-    // Carpeta lógica dentro de Cloudinary donde se agrupan las fotos de perfil
+    // Carpeta lógica dentro de Cloudinary
     private static final String CARPETA_CLOUDINARY = "tutorapp/fotos-perfil";
 
-    // ImmutableSet (Guava): colección inmutable, no puede alterarse en tiempo de ejecución
+    // ImmutableSet: colección inmutable, no puede alterarse en tiempo de ejecución
     private static final Set<String> TIPOS_PERMITIDOS =
             ImmutableSet.of("image/jpeg", "image/png", "image/webp");
     private static final long TAMANO_MAXIMO = 2 * 1024 * 1024; // 2 MB

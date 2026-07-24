@@ -40,9 +40,8 @@ function cambiarMetodoRetiro() {
   }
 }
 
-/* ── Reapertura de modales tras errores del servidor (flags del HTML) ── */
 document.addEventListener('DOMContentLoaded', function() {
-  // El guardado del perfil tuvo errores: se reabre el modal para mostrarlos
+
   if (document.getElementById('flag-errores-perfil')) {
     new bootstrap.Modal(document.getElementById('modalEditarPerfil')).show();
   }

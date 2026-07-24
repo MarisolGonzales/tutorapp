@@ -3,8 +3,7 @@ function fechaISO(d) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-// La hora mínima solo limita al día de hoy (no se puede elegir una hora ya pasada);
-// en los días siguientes el alumno puede elegir cualquier hora.
+// La hora mínima solo limita al día de hoy (no se puede elegir una hora ya pasada)
 function ajustarHoraMin() {
   const inputFecha = document.getElementById('reserva-fecha');
   const inputHora  = document.getElementById('reserva-hora');
@@ -20,15 +19,15 @@ function ajustarHoraMin() {
   }
 }
 
-/* ── Formato de los datos de la tarjeta ── */
+////////////Formato de los datos de la tarjeta///////////////
 
-// Agrupa el número en bloques de 4: "1234 5678 9012 3456" (16 dígitos)
+// Agrupa el número en bloques de 4: "1234 5678 9012 3456"
 function formatearTarjeta(input) {
   const digitos = input.value.replace(/\D/g, '').slice(0, 16);
   input.value = digitos.replace(/(\d{4})(?=\d)/g, '$1 ');
 }
 
-// Inserta el "/" automáticamente: "0625" -> "06/25"
+// Inserta el "/" automáticamente
 function formatearVencimiento(input) {
   let d = input.value.replace(/\D/g, '').slice(0, 4);
   input.value = d.length >= 3 ? d.slice(0, 2) + '/' + d.slice(2) : d;

@@ -87,7 +87,7 @@ public class AlumnoController {
         if (idAlumno == null) return "redirect:/login";
 
         List<Sesion> historial = sesionService.historialAlumno(idAlumno);
-        // Solo las completadas pueden tener reseña: evita consultar por las canceladas
+        // Solo las completadas pueden tener reseña
         Set<Long> sesionesConResena = historial.stream()
                 .filter(s -> s.getEstado() == EstadoSesion.Completada)
                 .map(Sesion::getId)
@@ -137,7 +137,7 @@ public class AlumnoController {
         if (!result.hasFieldErrors("contrasena") && !alumno.getContrasena().equals(confirmarContrasena)) {
             result.rejectValue("contrasena", "error.alumno", "Las contraseñas no coinciden.");
         }
-        // El correo debe ser único en TODA la app: ni otro alumno ni un tutor pueden tenerlo
+        // El correo debe ser único
         if (!result.hasFieldErrors("email")
                 && (alumnoService.existeEmail(alumno.getEmail()) || tutorService.existeEmail(alumno.getEmail()))) {
             result.rejectValue("email", "error.alumno", "Ya existe una cuenta con ese correo.");
@@ -176,8 +176,6 @@ public class AlumnoController {
         alumno.setCarrera(carrera);
         alumno.setCicloAcademico(cicloAcademico);
 
-        // Los errores se agrupan por campo para mostrarlos en rojo debajo de
-        // cada input del modal, igual que en los formularios de registro.
         Map<String, String> erroresPerfil = new HashMap<>();
 
         if (foto != null && !foto.isEmpty()) {
@@ -263,10 +261,10 @@ public class AlumnoController {
         Sesion sesion = new Sesion(alumno, servicio, fecha, hora, EstadoSesion.Pendiente);
 
         // Los errores se agrupan por campo para mostrarlos en rojo debajo de
-        // cada input del modal, igual que en los formularios de registro.
+        // cada input del modal
         Map<String, String> erroresReserva = new HashMap<>();
 
-        // Valida la sesión con las anotaciones de la entity (@NotNull...)
+        // Valida la sesión con las anotaciones de la entity
         validator.validate(sesion)
                 .forEach(v -> erroresReserva.putIfAbsent(v.getPropertyPath().toString(), v.getMessage()));
 

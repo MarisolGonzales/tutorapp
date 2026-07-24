@@ -17,12 +17,8 @@ import org.springframework.stereotype.Service;
 
 import com.tutorapp.tutorapp.model.Pago;
 
-/**
- * Genera reportes en formato Excel (.xlsx) con Apache POI.
- *
- * Por seguridad, el reporte NO incluye la referencia del pago, ya que esta
- * contiene el celular de Yape o los últimos dígitos de la tarjeta del alumno.
- */
+//Genera reportes en formato Excel (.xlsx) con Apache POI.
+
 @Service
 public class ReporteExcelService {
 
@@ -36,6 +32,7 @@ public class ReporteExcelService {
      * Construye el archivo Excel con los pagos recibidos y lo devuelve como
      * arreglo de bytes, listo para ser descargado por el navegador.
      */
+    
     public byte[] generarReportePagos(List<Pago> pagos) {
         try (Workbook libro = new XSSFWorkbook();
              ByteArrayOutputStream salida = new ByteArrayOutputStream()) {

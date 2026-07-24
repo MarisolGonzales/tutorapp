@@ -21,6 +21,7 @@ import jakarta.validation.constraints.Positive;
  * RETENIDO por TutorApp y se LIBERA al tutor cuando la sesión se completa.
  * Si la sesión se cancela, el pago se REEMBOLSA al alumno.
  */
+
 @Entity
 @Table(name = "pago")
 public class Pago {

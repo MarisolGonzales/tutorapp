@@ -18,8 +18,6 @@ public class Tutor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Las regex permiten "" para que el campo vacío solo dispare @NotBlank
-    // y el formato solo se valide cuando el usuario escribió algo.
     @Column(nullable = false, length = 100)
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "La longitud máxima es de 100 caracteres")

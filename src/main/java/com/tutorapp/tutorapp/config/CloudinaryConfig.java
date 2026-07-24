@@ -10,8 +10,9 @@ import com.cloudinary.utils.ObjectUtils;
 /**
  * Crea el cliente de Cloudinary como un bean único, configurado con las
  * credenciales del application.properties. Al ser un bean, Spring lo
- * inyecta donde se necesite (por ejemplo en FotoPerfilService).
+ * inyecta donde se necesite.
  */
+
 @Configuration
 public class CloudinaryConfig {
 

@@ -211,13 +211,11 @@ public class ReciboPdfService {
     private Paragraph construirPie() {
         Paragraph pie = new Paragraph();
         pie.setSpacingBefore(26);
-        pie.add(new Phrase("Representación impresa de la Boleta de Venta Electrónica.\n", F_PIE));
         pie.add(new Phrase("TutorApp retiene el pago y lo transfiere al tutor cuando la sesión se completa. "
                 + "Si la sesión se cancela, el monto se reembolsa íntegramente al alumno.\n", F_PIE));
         return pie;
     }
 
-    /* ── Utilidades de construcción ── */
 
     private LineSeparator separador() {
         LineSeparator linea = new LineSeparator();

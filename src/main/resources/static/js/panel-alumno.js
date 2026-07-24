@@ -1,4 +1,4 @@
-/* ── Cancelar sesión (alumno) ── */
+///////Cancelar sesión (alumno)/////////
 function abrirModalCancelarAlumno(btn) {
   document.getElementById('alumno-modal-fecha').textContent = btn.dataset.fecha;
   document.getElementById('formCancelarAlumno').action      = '/alumno/cancelar/' + btn.dataset.id;
@@ -22,7 +22,7 @@ function confirmarCancelacionAlumno() {
   document.getElementById('formCancelarAlumno').submit();
 }
 
-/* ── Star rating ── */
+/////calificar///////
 function seleccionarEstrella(el) {
   var val = parseInt(el.dataset.val);
   document.getElementById('resena-calificacion').value = val;
@@ -44,7 +44,7 @@ function pintarEstrellas(upTo) {
   });
 }
 
-/* ── Populate resena modal on open ── */
+///modal reseña////
 var modalResenaEl = document.getElementById('modalResena');
 if (modalResenaEl) {
   modalResenaEl.addEventListener('show.bs.modal', function(event) {
@@ -57,7 +57,7 @@ if (modalResenaEl) {
   });
 }
 
-/* ── Eventos de las estrellas (antes inline en el HTML) ── */
+/////Estrellas/////
 var starRating = document.getElementById('star-rating');
 if (starRating) {
   starRating.addEventListener('click', function(e) {
@@ -69,7 +69,7 @@ if (starRating) {
   starRating.addEventListener('mouseleave', salirEstrella);
 }
 
-/* ── Si el guardado del perfil tuvo errores, se reabre el modal ── */
+///Modal por si hay error
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('flag-errores-perfil')) {
     new bootstrap.Modal(document.getElementById('modalEditarAlumno')).show();

@@ -13,7 +13,8 @@ public interface RetiroRepository extends JpaRepository<Retiro, Long> {
 
     List<Retiro> findByTutor_IdOrderByFechaRetiroDesc(Long idTutor);
 
-    // Suma en BD: evita traer y ordenar todas las filas solo para totalizar
+    // Suma en BD
     @Query("SELECT COALESCE(SUM(r.monto), 0) FROM Retiro r WHERE r.tutor.id = :idTutor")
     double sumMontoByTutorId(Long idTutor);
 }
+

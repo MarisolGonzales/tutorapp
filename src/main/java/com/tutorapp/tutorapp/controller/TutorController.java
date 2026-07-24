@@ -63,13 +63,13 @@ public class TutorController {
         if (!result.hasFieldErrors("contrasena") && !tutor.getContrasena().equals(confirmarContrasena)) {
             result.rejectValue("contrasena", "error.tutor", "Las contraseñas no coinciden.");
         }
-        // El correo debe ser único en TODA la app: ni otro tutor ni un alumno pueden tenerlo
+        // El correo debe ser único en TODA la app
         if (!result.hasFieldErrors("email")
                 && (tutorService.existeEmail(tutor.getEmail()) || alumnoService.existeEmail(tutor.getEmail()))) {
             result.rejectValue("email", "error.tutor", "Ya existe una cuenta con ese correo.");
         }
         // Si hay errores se vuelve a la misma vista: el formulario conserva
-        // lo escrito y cada campo muestra su mensaje (th:errors).
+        // lo escrito y cada campo muestra su mensaje
         if (result.hasErrors()) {
             return "registro-tutor";
         }
@@ -126,8 +126,7 @@ public class TutorController {
         // Se limpia a null si viene vacío, para no guardar cadenas en blanco
         tutor.setDescripcion(descripcion != null && !descripcion.isBlank() ? descripcion.trim() : null);
 
-        // Los errores se agrupan por campo para mostrarlos en rojo debajo de
-        // cada input del modal, igual que en los formularios de registro.
+        // Los errores se agrupan por campo para mostrarlos en rojo debajo
         Map<String, String> erroresPerfil = new HashMap<>();
 
         if (foto != null && !foto.isEmpty()) {
@@ -138,7 +137,7 @@ public class TutorController {
             }
         }
 
-        // Valida los cambios con las anotaciones de la entity (@NotBlank...)
+        // Valida los cambios con las anotaciones de la entity
         validator.validate(tutor)
                 .forEach(v -> erroresPerfil.putIfAbsent(v.getPropertyPath().toString(), v.getMessage()));
 
@@ -170,8 +169,7 @@ public class TutorController {
         // Saldo disponible = pagos liberados por el sistema - retiros anteriores
         double saldoDisponible = pagoService.totalLiberado(idTutor) - retiroService.totalRetirado(idTutor);
 
-        // Los errores se agrupan por campo para mostrarlos en rojo debajo de
-        // cada input del modal, igual que en los formularios de registro.
+        // Los errores se agrupan por campo para mostrarlos en rojo debajo
         Map<String, String> erroresRetiro = new HashMap<>();
 
         Double montoNum = null;

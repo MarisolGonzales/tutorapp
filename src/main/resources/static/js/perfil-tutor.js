@@ -1,4 +1,4 @@
-// Pasa una fecha a YYYY-MM-DD en hora local (el formato que usa el input date).
+// Pasa una fecha a YYYY-MM-DD en hora local (el formato que usa el input date)
 function fechaISO(d) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
@@ -20,15 +20,15 @@ function ajustarHoraMin() {
   }
 }
 
-/* ── Formato de los datos de la tarjeta ── */
+////Formato de los datos de la tarjeta///
 
-// Agrupa el número en bloques de 4: "1234 5678 9012 3456" (16 dígitos)
+// Agrupa el número en bloques de 4: "1234 5678 9012 3456"
 function formatearTarjeta(input) {
   const digitos = input.value.replace(/\D/g, '').slice(0, 16);
   input.value = digitos.replace(/(\d{4})(?=\d)/g, '$1 ');
 }
 
-// Inserta el "/" automáticamente: "0625" -> "06/25"
+// Inserta el "/" automáticamente
 function formatearVencimiento(input) {
   let d = input.value.replace(/\D/g, '').slice(0, 4);
   input.value = d.length >= 3 ? d.slice(0, 2) + '/' + d.slice(2) : d;
